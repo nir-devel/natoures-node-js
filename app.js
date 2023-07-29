@@ -1,28 +1,21 @@
 const express = require('express');
 const app = express();
+const fs = require('fs');
 
-//Route to the app url with GET
-app.get('/', (req, res) => {
-  //res.end('Hello from the root endpoint');
-  //res.status(200).send('Hello from the server side');
-  //JSEND - Enveloping the response format
-  //When using json() the Content-Type is set automatically to application/json(I dont need manyally add the header)
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'Hello From the Server side',
-      app: 'Natours',
-    },
-  });
-});
-
-app.post('/', (req, res) => {
-  res.status(200).send('You can post to the server');
-});
+//Read the array of all  tours object into a JSONString and then convert it to JSON objet-  sync (top level code)
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8')
+);
 
 const port = 3000;
 
+app.get('/api/v1/tours', (req, res) => {
+  res
+    .status(200)
+    //ES6 - tours only tours property - the value will be resolved
+    .json({ status: 'success', results: tours.length, data: { tours } });
+});
 //cb will be called on start lisening event
-app.listen(3000, () => {
+app.listen(port, () => {
   console.log(`App running on port ${port}`);
 });
