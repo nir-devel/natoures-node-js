@@ -8,16 +8,39 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8')
 );
 
+/**Create my own midleware - My cb will be called for each request
+    Must call next - otherwise - the request stuck in the request-response cycle
+    no respone will returend to client
+ */
+app.use((req, res, next) => {
+  console.log('INSIDE MY MIDDLEWARE');
+  next();
+});
+
+//Middle ware that manipulate the request - write the current time to the request and response
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString().split('T')[0];
+  //   console.log(req.requestTime);
+  next();
+});
 const port = 3000;
 
 /////////////////////////////////////
 //GET ALL TOURS
 //////////////////////////////////////////////
+
+//Suppose this route handler wants to know the time the request send- and send it to the response
 const getAllTours = (req, res) => {
+  console.log(`Inside getAllTours handler: request sent on ${req.requestTime}`);
   res
     .status(200)
     //ES6 - tours only tours property - the value will be resolved
-    .json({ status: 'success', results: tours.length, data: { tours } });
+    .json({
+      status: 'success',
+      requestedAt: req.requestTime,
+      results: tours.length,
+      data: { tours },
+    });
 };
 
 /////////////////////////////////////////
@@ -124,7 +147,10 @@ const deleteTour = (req, res) => {
 // app.patch('/api/v1/tours/:id', updateTour);
 // app.post('/api/v1/tours', createTour);
 ////////////MERGE urls /////////
+
+//THE FOLLOWING MIDDLE WARS - END THE REQUEST RESPONSE! (their cb write to the response)
 app.route('/api/v1/tours').get(getAllTours).post(createTour);
+
 app
   .route('/api/v1/tours/:id')
   .get(getTour)
