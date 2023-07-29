@@ -1,7 +1,24 @@
-const { create } = require('domain');
-const express = require('express');
-const app = express();
+//BUILT IN MODULES
 const fs = require('fs');
+// const { create } = require('domain');
+//MY OWN MODULES
+//3rd modules
+const express = require('express');
+const morgan = require('morgan');
+
+const app = express();
+
+//////////////////////////////////////////////
+//1.MIDDLEWARS
+//////////////////////////////////////////////////
+/**Middle ware to put the request body on the Request object
+ * without it - the req.body is undefined!
+ */
+//tiny does not have the status code colored
+// app.use(morgan('tiny'));
+app.use(morgan('dev'));
+
+app.use(express.json());
 
 //Read the array of all  tours object into a JSONString and then convert it to JSON objet-  sync (top level code)
 const tours = JSON.parse(
@@ -23,12 +40,11 @@ app.use((req, res, next) => {
   //   console.log(req.requestTime);
   next();
 });
+
+/////////////////////////////////////////////////
+//ROUTE HANDLERS
+/////////////////////////////////
 const port = 3000;
-
-/////////////////////////////////////
-//GET ALL TOURS
-//////////////////////////////////////////////
-
 //Suppose this route handler wants to know the time the request send- and send it to the response
 const getAllTours = (req, res) => {
   console.log(`Inside getAllTours handler: request sent on ${req.requestTime}`);
@@ -43,9 +59,6 @@ const getAllTours = (req, res) => {
     });
 };
 
-/////////////////////////////////////////
-//GET SINGLE TOUR BY ID
-//////////////////////////////////////
 const getTour = (req, res) => {
   //read the id from the url
   const id = req.params.id;
@@ -68,16 +81,7 @@ const getTour = (req, res) => {
   });
   console.log(tour.name);
 };
-//cb will be called on start lisening event
 
-/**Middle ware to put the request body on the Request object
- * without it - the req.body is undefined!
- */
-app.use(express.json());
-
-///////////////////////////////////////////////////
-// CREATE NEW TOUR
-//////////////////////////////////////////////////
 const createTour = (req, res) => {
   //Generate the id(The id is part of the API STATE?)
   const newId = tours[tours.length - 1].id + 1;
@@ -113,11 +117,6 @@ const createTour = (req, res) => {
   );
 };
 
-////////////////////////////////////////////////
-//UPDATE PARTIAL TOUR
-////////////////////////////////////////////
-//Patch - accept partial tour object and update
-
 const updateTour = (req, res) => {
   console.log(req.params.id);
   if (req.params.id * 1 > tours.length)
@@ -131,15 +130,12 @@ const updateTour = (req, res) => {
   });
 };
 
-////////////////////////////////////////////////
-//DELETE TOUR
-////////////////////////////////////////////
 const deleteTour = (req, res) => {
   res.status(204).json({ status: 'success', data: null });
 };
 
 ////////////////////////////////////////////
-//REGISTER  HANDLERS TO HTTP METHODS
+//ROUTES
 ///////////////////////////////////
 // app.get('/api/v1/tours', getAllTours);
 // app.get('/api/v1/tours/:id', getTour);
@@ -157,6 +153,9 @@ app
   .delete(deleteTour)
   .patch(updateTour);
 
+///////////////////////////
+//STARTS THE SERVER
+///////////////////
 //cb will be called on start lisening event
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
