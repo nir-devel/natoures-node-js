@@ -134,6 +134,39 @@ const deleteTour = (req, res) => {
   res.status(204).json({ status: 'success', data: null });
 };
 
+///////////////////////////////
+//USERS HANDLERS
+const getAllUsers = (req, res) => {
+  res
+    .status(500)
+    .json({ status: 'error', message: 'This route is not yet defined' });
+};
+
+const getUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: 'error', message: 'This route is not yet defined' });
+};
+
+const createUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: 'error', message: 'This route is not yet defined' });
+};
+
+const updateUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: 'error', message: 'This route is not yet defined' });
+};
+
+const deleteUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: 'error', message: 'This route is not yet defined' });
+};
+//USER HANDLERS FUNCTIONS
+
 ////////////////////////////////////////////
 //ROUTES
 ///////////////////////////////////
@@ -144,15 +177,21 @@ const deleteTour = (req, res) => {
 // app.post('/api/v1/tours', createTour);
 ////////////MERGE urls /////////
 
-//THE FOLLOWING MIDDLE WARS - END THE REQUEST RESPONSE! (their cb write to the response)
+//TOURS ROUTES
 app.route('/api/v1/tours').get(getAllTours).post(createTour);
-
 app
   .route('/api/v1/tours/:id')
   .get(getTour)
   .delete(deleteTour)
   .patch(updateTour);
 
+//USERS ROUTES
+app.route('/api/v1/users').get(getAllUsers).post(createUser);
+app
+  .route('/api/v1/users/:id')
+  .get(getUser)
+  .delete(deleteUser)
+  .patch(updateUser);
 ///////////////////////////
 //STARTS THE SERVER
 ///////////////////
