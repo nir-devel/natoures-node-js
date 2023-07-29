@@ -1,3 +1,4 @@
+const { create } = require('domain');
 const express = require('express');
 const app = express();
 const fs = require('fs');
@@ -9,18 +10,20 @@ const tours = JSON.parse(
 
 const port = 3000;
 
-app.get('/api/v1/tours', (req, res) => {
+/////////////////////////////////////
+//GET ALL TOURS
+//////////////////////////////////////////////
+const getAllTours = (req, res) => {
   res
     .status(200)
     //ES6 - tours only tours property - the value will be resolved
     .json({ status: 'success', results: tours.length, data: { tours } });
-});
-//cb will be called on start lisening event
-app.listen(port, () => {
-  console.log(`App running on port ${port}`);
-});
+};
 
-app.get('/api/v1/tours/:id', (req, res) => {
+/////////////////////////////////////////
+//GET SINGLE TOUR BY ID
+//////////////////////////////////////
+const getTour = (req, res) => {
   //read the id from the url
   const id = req.params.id;
 
@@ -41,7 +44,7 @@ app.get('/api/v1/tours/:id', (req, res) => {
     data: { tour },
   });
   console.log(tour.name);
-});
+};
 //cb will be called on start lisening event
 
 /**Middle ware to put the request body on the Request object
@@ -49,7 +52,10 @@ app.get('/api/v1/tours/:id', (req, res) => {
  */
 app.use(express.json());
 
-app.post('/api/v1/tours', (req, res) => {
+///////////////////////////////////////////////////
+// CREATE NEW TOUR
+//////////////////////////////////////////////////
+const createTour = (req, res) => {
   //Generate the id(The id is part of the API STATE?)
   const newId = tours[tours.length - 1].id + 1;
 
@@ -60,16 +66,16 @@ app.post('/api/v1/tours', (req, res) => {
   tours.push(newTour);
 
   /*PERSIST THE NEW TOUR INTO THE FILE(ASYNC)
-    Before persisting the tours JSON object into the json file(text file)
-   
-   -  Must Stringify it into a String format
-   
-   - NOTE: Build the respone object inside the callback function which 
-          will be executed as soon as the writing into the file completed
-          
-          the data property of the response is the ENVELOP
-      
-   */
+      Before persisting the tours JSON object into the json file(text file)
+     
+     -  Must Stringify it into a String format
+     
+     - NOTE: Build the respone object inside the callback function which 
+            will be executed as soon as the writing into the file completed
+            
+            the data property of the response is the ENVELOP
+        
+     */
   fs.writeFile(
     `${__dirname}/dev-data/data/tours-simple.json`,
     JSON.stringify(tours),
@@ -82,18 +88,50 @@ app.post('/api/v1/tours', (req, res) => {
       });
     }
   );
-});
+};
 
+////////////////////////////////////////////////
+//UPDATE PARTIAL TOUR
+////////////////////////////////////////////
 //Patch - accept partial tour object and update
-app.patch('/api/v1/tours/:id', (req, res) => {
+
+const updateTour = (req, res) => {
   console.log(req.params.id);
   if (req.params.id * 1 > tours.length)
     return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
 
-  res.status(200).json({
+  res.status(201).json({
     status: 'success',
     data: {
       tour: 'TOUR UPDATED HERE',
     },
   });
+};
+
+////////////////////////////////////////////////
+//DELETE TOUR
+////////////////////////////////////////////
+const deleteTour = (req, res) => {
+  res.status(204).json({ status: 'success', data: null });
+};
+
+////////////////////////////////////////////
+//REGISTER  HANDLERS TO HTTP METHODS
+///////////////////////////////////
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.post('/api/v1/tours', createTour);
+////////////MERGE urls /////////
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+app
+  .route('/api/v1/tours/:id')
+  .get(getTour)
+  .delete(deleteTour)
+  .patch(updateTour);
+
+//cb will be called on start lisening event
+app.listen(port, () => {
+  console.log(`App running on port ${port}`);
 });
