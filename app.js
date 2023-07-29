@@ -82,16 +82,18 @@ app.post('/api/v1/tours', (req, res) => {
       });
     }
   );
+});
 
-  console.log(tours);
+//Patch - accept partial tour object and update
+app.patch('/api/v1/tours/:id', (req, res) => {
+  console.log(req.params.id);
+  if (req.params.id * 1 > tours.length)
+    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
 
-  //WHAT IS WRONG??
-  //JSON.parse(tour);
-  //   const tourJSON = JSON.parse(tour);
-  //   tours.add(tour);
-  //Persist the req.body into the file
-  //   fs.writeFileSync(`${__dirname}/dev-data/data`, tour, (err) => {
-  //     console.error('Could not persist the tour');
-  //   });
-  //res.send('DONE');
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour: 'TOUR UPDATED HERE',
+    },
+  });
 });
