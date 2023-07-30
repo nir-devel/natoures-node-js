@@ -177,21 +177,25 @@ const deleteUser = (req, res) => {
 // app.post('/api/v1/tours', createTour);
 ////////////MERGE urls /////////
 
-//TOURS ROUTES
-app.route('/api/v1/tours').get(getAllTours).post(createTour);
-app
-  .route('/api/v1/tours/:id')
-  .get(getTour)
-  .delete(deleteTour)
-  .patch(updateTour);
+//Connect the app  to the tourRouter(Middle) on the url api/v1/tours
+//SUB APPLICATION:
 
+const tourRouter = express.Router();
+const userRouter = express.Router();
+
+tourRouter.route('/').get(getAllTours).post(createTour);
+tourRouter.route('/:id').get(getTour).delete(deleteTour).patch(updateTour);
+
+//TOURS ROUTES(Before mounting)
+//
 //USERS ROUTES
-app.route('/api/v1/users').get(getAllUsers).post(createUser);
-app
-  .route('/api/v1/users/:id')
-  .get(getUser)
-  .delete(deleteUser)
-  .patch(updateUser);
+app.use('/api/v1/users', userRouter);
+userRouter.route('/').get(getAllUsers).post(createUser);
+userRouter.route('/:id').get(getUser).delete(deleteUser).patch(updateUser);
+
+//MOUNTING ANE ROUTER(tourRouter) ON A ROUTE(/api/v1/users)
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 ///////////////////////////
 //STARTS THE SERVER
 ///////////////////
