@@ -39,6 +39,7 @@ router.param('id', (req, res, next, val) => {
   console.log(`inside userRouter - id recieved: ${val}`);
   next();
 });
+
 router
   .route('/')
   .get(userController.getAllUsers)

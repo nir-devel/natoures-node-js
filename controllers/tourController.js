@@ -13,6 +13,30 @@ exports.checkID = (req, res, next, val) => {
   next();
 };
 
+//OK
+exports.checkBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price)
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Missing name or price',
+    });
+
+  next();
+};
+
+//WRONG - NO ID PARAM IN THE URL OF THE POST REQUEST!
+// exports.checkBody = (req, res, next, val) => {
+//   console.log(`inside checkID: body = ${val}`);
+//   console.log(req.body);
+//   if (!req.body.name || !body.req.price)
+//     return res.status(404).json({
+//       status: 'fail',
+//       message: 'Tour must have name and price values',
+//     });
+
+//   next();
+// };
+
 //ROUTES
 exports.getAllTours = (req, res) => {
   console.log(`Inside getAllTours handler: request sent on ${req.requestTime}`);
