@@ -2,6 +2,17 @@ const fs = require('fs');
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8')
 );
+
+//Extract method : id validation
+exports.checkID = (req, res, next, val) => {
+  console.log(`inside checkID: id = ${val}`);
+  console.log(req.params);
+  if (req.params.id * 1 > tours.length)
+    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+
+  next();
+};
+
 //ROUTES
 exports.getAllTours = (req, res) => {
   console.log(`Inside getAllTours handler: request sent on ${req.requestTime}`);
@@ -15,27 +26,27 @@ exports.getAllTours = (req, res) => {
       data: { tours },
     });
 };
+
 exports.getTour = (req, res) => {
   //read the id from the url
   const id = req.params.id;
 
-  //Check if id is valid :solution 1
-  //   if (id > tours.length)
-  //     return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+  //EXTRACTED
+  // if (req.params.id * 1 > tours.length)
+  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
 
-  //Find the tour in the tours array with this id(must convert the req.params.id to numbe from string)
   const tour = tours.find((tour) => tour.id === req.params.id * 1);
 
   //Check if id is valid - solution 2:
-  if (!tour)
-    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+  // if (!tour)
+  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
   // const t = tours.find((tour) => tour.id === +req.params.id);
 
   res.status(200).json({
     message: 'success',
     data: { tour },
   });
-  console.log(tour.name);
+  // console.log(tour.name);
 };
 
 exports.createTour = (req, res) => {
@@ -75,8 +86,9 @@ exports.createTour = (req, res) => {
 
 exports.updateTour = (req, res) => {
   console.log(req.params.id);
-  if (req.params.id * 1 > tours.length)
-    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+  //EXTRACT THIS CODE INTO THE checkID() on top
+  // if (req.params.id * 1 > tours.length)
+  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
 
   res.status(201).json({
     status: 'success',
@@ -87,5 +99,8 @@ exports.updateTour = (req, res) => {
 };
 
 exports.deleteTour = (req, res) => {
+  //EXTRACTED
+  // if (req.params.id * 1 > tours.length)
+  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
   res.status(204).json({ status: 'success', data: null });
 };

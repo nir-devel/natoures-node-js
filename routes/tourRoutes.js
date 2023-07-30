@@ -109,6 +109,15 @@ const tourController = require(`./../controllers/tourController`);
 
 const router = express.Router();
 
+//Param Middleware: TEST - BEFORE EXTRACTING THIS CB TO THE CONTROLLER checkID - OK
+// router.param('id', (req, res, next, val) => {
+//   console.log(`tourRoutes accepts url id: ${val}`);
+//   next();
+// });
+
+//Extract the code above to the checkID method in the controller and pass it to router.param
+router.param('id', tourController.checkID);
+
 router
   .route('/')
   .get(tourController.getAllTours)
