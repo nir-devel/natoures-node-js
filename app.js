@@ -24,6 +24,9 @@ app.use(morgan('dev'));
 
 app.use(express.json());
 
+//static content from the f.s
+//app.use(express.static(`${__dirname}/public`));
+
 // //Read the array of all  tours object into a JSONString and then convert it to JSON objet-  sync (top level code)
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8')
