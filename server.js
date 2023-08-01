@@ -1,7 +1,8 @@
-const mongoose = require('mongoose');
+// NOT NEED IT HERE - IN THIS FILE I JUST WANT TO CONNECT TO THE DB
+// const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const app = require('./app');
-
+const mongoose = require('mongoose');
 dotenv.config({ path: './config.env' });
 
 /*
@@ -26,56 +27,56 @@ mongoose
   // HANDLETHE PROIMSE - RESOLVED VALUE IS THE NEW CONNECTION
   .then(() => console.log('CONNECTION ESTABLIHSED!'));
 
-// Create the tourschema with mongoose(same data types as native JS)
-const tourSchema = mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'A tour must have a name'],
-    unique: true,
-  },
-  rating: {
-    type: Number,
-    default: 4.5,
-  },
-  price: {
-    type: Number,
-    required: [true, 'A tour must have a price'],
-  },
-});
+// // Create the tourschema with mongoose(same data types as native JS)
+// const tourSchema = mongoose.Schema({
+//   name: {
+//     type: String,
+//     required: [true, 'A tour must have a name'],
+//     unique: true,
+//   },
+//   rating: {
+//     type: Number,
+//     default: 4.5,
+//   },
+//   price: {
+//     type: Number,
+//     required: [true, 'A tour must have a price'],
+//   },
+// });
 
-/**
- * Create a tour model from the shcema
-MODELS NAMES VARIABLES - always start with capital - convention
-Models are used with the same JS ES6 CLASSES SYNTAX
-*/
-const Tour = mongoose.model('Tour', tourSchema);
+// /**
+//  * Create a tour model from the shcema
+// MODELS NAMES VARIABLES - always start with capital - convention
+// Models are used with the same JS ES6 CLASSES SYNTAX
+// */
+// const Tour = mongoose.model('Tour', tourSchema);
 
-// Create the tour document from the Tour model(document is an instance of the mdoel blue print)
-const testTour = new Tour({
-  name: 'The Snow Hiker',
-  rating: 4.7,
-  price: 497,
-});
+// // Create the tour document from the Tour model(document is an instance of the mdoel blue print)
+// const testTour = new Tour({
+//   name: 'The Snow Hiker',
+//   rating: 4.7,
+//   price: 497,
+// });
 
-/**
- * Save the testTour to the tours collection (return a Promise )
- */
-testTour
-  .save()
-  .then((newTour) => console.log(newTour))
-  // Hanling the error
-  .catch((err) => console.error(`ERROR *: `, err));
+// /**
+//  * Save the testTour to the tours collection (return a Promise )
+//  */
+// testTour
+//   .save()
+//   .then((newTour) => console.log(newTour))
+//   // Hanling the error
+//   .catch((err) => console.error(`ERROR *: `, err));
 
-// CONNECT TO LOCAL - ERROR!!!!
-// mongoose
-//   .connect(process.env.DATABASE_LOCAL, {
-//     useNewUrlParser: true,
-//     useCreateIndex: true,
-//     useFindAndModify: false,
-//     useUnifiedTopology: true,
-//   })
-//   .then(() => console.log('CONNECTION ESTABLIHSED!'))
-//   .catch((err) => console.error(err));
+// // CONNECT TO LOCAL - ERROR!!!!
+// // mongoose
+// //   .connect(process.env.DATABASE_LOCAL, {
+// //     useNewUrlParser: true,
+// //     useCreateIndex: true,
+// //     useFindAndModify: false,
+// //     useUnifiedTopology: true,
+// //   })
+// //   .then(() => console.log('CONNECTION ESTABLIHSED!'))
+// //   .catch((err) => console.error(err));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

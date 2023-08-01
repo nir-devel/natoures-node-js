@@ -109,6 +109,7 @@ const tourController = require(`./../controllers/tourController`);
 
 const router = express.Router();
 
+//NO NEED THIS AFTER REFACTORING TO MONGODB WHICH WILL HANDLE THE ID GENERATION AND VALIDATION!
 //Param Middleware: TEST - BEFORE EXTRACTING THIS CB TO THE CONTROLLER checkID - OK
 // router.param('id', (req, res, next, val) => {
 //   console.log(`tourRoutes accepts url id: ${val}`);
@@ -116,12 +117,13 @@ const router = express.Router();
 // });
 
 //Extract the code above to the checkID method in the controller and pass it to router.param
-router.param('id', tourController.checkID);
+//router.param('id', tourController.checkID);
 
 router
   .route('/')
   .get(tourController.getAllTours)
-  .post(tourController.checkBody, tourController.createTour);
+  // .post(tourController.checkBody, tourController.createTour);
+  .post(tourController.createTour);
 router
   .route('/:id')
   .get(tourController.getTour)
