@@ -8,7 +8,7 @@ dotenv.config({ path: './config.env' });
 connect to the mongodb using mongoose: 
   But first - replace the password section in the connection string  - using the process.env 
 */
-//Get the connection string and replace thePASSWORD> with the real one in the DATABASE_PASSWORD e.v
+// Get the connection string and replace thePASSWORD> with the real one in the DATABASE_PASSWORD e.v
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',
   process.env.DATABASE_PASSWORD,
@@ -21,6 +21,7 @@ mongoose
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
+    useUnifiedTopology: true,
   })
   // HANDLETHE PROIMSE - RESOLVED VALUE IS THE NEW CONNECTION
   .then(() => console.log('CONNECTION ESTABLIHSED!'));
@@ -42,15 +43,30 @@ const tourSchema = mongoose.Schema({
   },
 });
 
-//Create a tour model from the shcema
-//MODELS NAMES  VARIABLES - always start with capital - convention
-//Models are used with the same JS ES6 CLASSES SYNTAX
+/**
+ * Create a tour model from the shcema
+MODELS NAMES VARIABLES - always start with capital - convention
+Models are used with the same JS ES6 CLASSES SYNTAX
+*/
 const Tour = mongoose.model('Tour', tourSchema);
 
-//Create the tour document from the Tour model
-const testTour = new Tour({ name: 'The Forest Hiker', rating: 4.7, price: 97 });
+// Create the tour document from the Tour model(document is an instance of the mdoel blue print)
+const testTour = new Tour({
+  name: 'The Snow Hiker',
+  rating: 4.7,
+  price: 497,
+});
 
-//CONNECT TO LOCAL - ERROR!!!!
+/**
+ * Save the testTour to the tours collection (return a Promise )
+ */
+testTour
+  .save()
+  .then((newTour) => console.log(newTour))
+  // Hanling the error
+  .catch((err) => console.error(`ERROR *: `, err));
+
+// CONNECT TO LOCAL - ERROR!!!!
 // mongoose
 //   .connect(process.env.DATABASE_LOCAL, {
 //     useNewUrlParser: true,
