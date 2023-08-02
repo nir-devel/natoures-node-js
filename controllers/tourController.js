@@ -3,21 +3,6 @@
 const Tour = require('./../models/tourModel');
 // console.log(Tour);
 
-// const tours = JSON.parse(
-//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8'),
-// );
-
-// Extract method : id validation
-//NO NEED THIS MIDDLEWARE ANMORE ANYMORE - ID VALIDATION WILL BE HANDLED BY MONGODB!
-// exports.checkID = (req, res, next, val) => {
-//   console.log(`inside checkID: id = ${val}`);
-//   console.log(req.params);
-//   if (req.params.id * 1 > tours.length)
-//     return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-
-//   next();
-// };
-
 // OK
 exports.checkBody = (req, res, next) => {
   if (!req.body.name || !req.body.price)
@@ -43,37 +28,44 @@ exports.checkBody = (req, res, next) => {
 // };
 
 //ROUTES
-exports.getAllTours = (req, res) => {
-  console.log(`Inside getAllTours handler: request sent on ${req.requestTime}`);
-  res.status(200).json({ status: 'success' });
-  // ES6 - tours only tours property - the value will be resolved
-  // .json({
-  //   status: 'success',
-  //   requestedAt: req.requestTime,
-  //   results: tours.length,
-  //   data: { tours },
-  // });
+exports.getAllTours = async (req, res) => {
+  // const requestedAt = Date.now().toString();
+  try {
+    const tours = await Tour.find();
+    res
+      .status(200)
+      .json({ status: 'success', results: tours.length, data: { tours } });
+  } catch (err) {
+    res.status(404).json({ status: 'failed', message: err });
+  }
 };
 
-exports.getTour = (req, res) => {
-  //read the id from the url
-  const id = req.params.id;
-
+exports.getTour = async (req, res) => {
+  try {
+    //Read the id from the Route and call the Tour.findById
+    //findById() - shortend to the Mongo syntax to findOne + find(filter)
+    //I COULD WRITE THIS as Tour.findOne({_id: req.params.id})
+    const tour = await Tour.findById(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
+    console.log(tour);
+  } catch (err) {
+    res.status(404).json({ status: 'fail', message: err });
+  }
+  //read the id from the url(NOTE: The end point in the controlRoute was
+  //defined as /api/v1/tours/:id )
   //EXTRACTED
   // if (req.params.id * 1 > tours.length)
   //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-
   //const tour = tours.find((tour) => tour.id === req.params.id * 1);
-
   //Check if id is valid - solution 2:
   // if (!tour)
   //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
   // const t = tours.find((tour) => tour.id === +req.params.id);
-
-  res.status(200).json({
-    message: 'success',
-    // data: { tour },
-  });
   // console.log(tour.name);
 };
 
