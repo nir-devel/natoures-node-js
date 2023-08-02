@@ -77,7 +77,28 @@ exports.getTour = (req, res) => {
   // console.log(tour.name);
 };
 
-exports.createTour = (req, res) => {};
+exports.createTour = async (req, res) => {
+  // console.log(`inside the createTour handler!!`);
+
+  try {
+    //Create a new tour documentusing the Tour Model API
+    //(instead of the Document API - in which I need to first create a Documnet instance )
+    const newTour = await Tour.create(req.body);
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        tour: newTour,
+      },
+    });
+  } catch (err) {
+    console.error('* * ERROR- TourController', err);
+    //SEND MEANINGFUL ERROR MESSAGE TO THE CLIENT
+    res.status(400).json({ status: 'failed', message: 'Invlaid data sent' });
+
+    // res.status(400).json({ status: 'failed', message: err });
+  }
+};
 
 exports.updateTour = (req, res) => {
   console.log(req.params.id);
@@ -97,5 +118,6 @@ exports.deleteTour = (req, res) => {
   //EXTRACTED
   // if (req.params.id * 1 > tours.length)
   //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+  //SEND MEANINGFULL MESSAGE
   res.status(204).json({ status: 'success', data: null });
 };
