@@ -1,10 +1,10 @@
 // NOT NEED IT HERE - IN THIS FILE I JUST WANT TO CONNECT TO THE DB
 // const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const app = require('./app');
 const mongoose = require('mongoose');
 dotenv.config({ path: './config.env' });
-console.log(`inside the server startup: DATABASE = ${process.env.DATABASE}`);
+//console.log(`inside the server startup: DATABASE = ${process.env.DATABASE}`);
+const app = require('./app');
 
 console.log(
   `inside the server startup: PASSWORD = ${process.env.DATABASE_PASSWORD}`,

@@ -37,10 +37,12 @@ const importData = async function () {
     await Tour.create(tours);
 
     console.log('Data succesfully loaded');
-    process.exit();
+    // process.exit();
   } catch (err) {
     console.log(err);
   }
+
+  process.exit();
 };
 
 //DELETEING ALL DATA FROM DB - use the deleteMany function
@@ -49,10 +51,12 @@ const deleteData = async function () {
     //Mongoose - Layer of abstraction over Native MongoDB
     await Tour.deleteMany();
     console.log('All tours Data have been deleted from DB');
-    process.exit();
+    // process.exit();
   } catch (err) {
     console.log(err);
   }
+
+  process.exit();
 };
 
 console.log('CONNECTED  TO DB FROM dev-data-import.js');

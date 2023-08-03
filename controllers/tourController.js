@@ -31,13 +31,46 @@ exports.checkBody = (req, res, next) => {
 exports.getAllTours = async (req, res) => {
   // const requestedAt = Date.now().toString();
   try {
-    const tours = await Tour.find();
+    console.log(req.query);
+    //CREATE A HARD COPY of the req.query (to prevent modification on the paramater) using ES6 : destructring the req.query into an object
+    const queryObj = { ...req.query };
+
+    //Create an array of all properties I want to exclude
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+
+    //Remove from the queryObj object  the excludedFields - using the delete operator
+    excludedFields.forEach((el) => delete queryObj[el]);
+
+    /**TEST: OK 
+     * req.query: { difficulty: 'easy', page: '2', sort: '8', limit: '10', fields: '23' }
+       queryObj after excluding the 4 query params: { difficulty: 'easy' }
+     */
+    //console.log('queryObj after excluding the 4 query params:', queryObj);
+    //TEST IF THE HARD COPY IS DIFFERENT AFTER REMOVING THE fields
+    // console.log('req.query:', req.query);
+    // console.log('queryObj:', queryObj);
+
+    //Note - the queryObj has the same syntax as the Mongoosse qequires
+    // const tours = await Tour.find(queryObj);
+    //BUILD THE QUERY
+    const query = Tour.find(queryObj);
+
+    //EXECUTE THE QUERY - with await
+    const tours = await query;
+
+    //SNED RESOPNSE
     res
       .status(200)
       .json({ status: 'success', results: tours.length, data: { tours } });
   } catch (err) {
     res.status(404).json({ status: 'failed', message: err });
   }
+  // const tours = await Tour.find({ duration: 5, difficulty: 'easy' });
+  // const tours = await Tour.find()
+  //   .where('duration')
+  //   .equals(5)
+  //   .where('difficulty')
+  //   .equals('easy');
 };
 
 exports.getTour = async (req, res) => {
