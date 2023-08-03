@@ -92,18 +92,24 @@ exports.createTour = async (req, res) => {
   }
 };
 
-exports.updateTour = (req, res) => {
-  console.log(req.params.id);
-  //EXTRACT THIS CODE INTO THE checkID() on top
-  // if (req.params.id * 1 > tours.length)
-  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+exports.updateTour = async (req, res) => {
+  try {
+    //Read the id from url , find the tour , update the tour
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      //Returns the updated document
+      new: true,
+      runValidators: true,
+    });
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: 'TOUR UPDATED HERE',
-    },
-  });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({ status: 'fail', message: err });
+  }
 };
 
 exports.deleteTour = (req, res) => {
