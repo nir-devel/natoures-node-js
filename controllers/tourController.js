@@ -42,32 +42,27 @@ exports.getAllTours = async (req, res) => {
 
 exports.getTour = async (req, res) => {
   try {
-    //Read the id from the Route and call the Tour.findById
-    //findById() - shortend to the Mongo syntax to findOne + find(filter)
-    //I COULD WRITE THIS as Tour.findOne({_id: req.params.id})
+    /*NOTE:findById() - Shorthand for findOne of Mongoose: 
+      Tour.findOne({_id: req.param.id})
+    */
     const tour = await Tour.findById(req.params.id);
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    });
-    console.log(tour);
+    //console.log(`Inside getTour() - found tour: ${tour}`);
+    res.status(200).json({ status: 'success', data: { tour } });
   } catch (err) {
-    res.status(404).json({ status: 'fail', message: err });
+    res.status(404).json({ status: 'fail', data: null });
   }
-  //read the id from the url(NOTE: The end point in the controlRoute was
-  //defined as /api/v1/tours/:id )
-  //EXTRACTED
-  // if (req.params.id * 1 > tours.length)
-  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-  //const tour = tours.find((tour) => tour.id === req.params.id * 1);
-  //Check if id is valid - solution 2:
-  // if (!tour)
-  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-  // const t = tours.find((tour) => tour.id === +req.params.id);
-  // console.log(tour.name);
 };
+//read the id from the url(NOTE: The end point in the controlRoute was
+//defined as /api/v1/tours/:id )
+//EXTRACTED
+// if (req.params.id * 1 > tours.length)
+//   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+//const tour = tours.find((tour) => tour.id === req.params.id * 1);
+//Check if id is valid - solution 2:
+// if (!tour)
+//   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+// const t = tours.find((tour) => tour.id === +req.params.id);
+// console.log(tour.name);
 
 exports.createTour = async (req, res) => {
   // console.log(`inside the createTour handler!!`);
@@ -92,12 +87,14 @@ exports.createTour = async (req, res) => {
   }
 };
 
+//HOW TO HANDLE THE CASE WHEN THE ID NOT FOUND???
 exports.updateTour = async (req, res) => {
   try {
     //Read the id from url , find the tour , update the tour
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       //Returns the updated document
       new: true,
+      //The Mongoose API will handle it !Not me in the catch!
       runValidators: true,
     });
 
@@ -113,10 +110,18 @@ exports.updateTour = async (req, res) => {
   }
 };
 
-exports.deleteTour = (req, res) => {
-  //EXTRACTED
-  // if (req.params.id * 1 > tours.length)
-  //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-  //SEND MEANINGFULL MESSAGE
-  res.status(204).json({ status: 'success', data: null });
+//HOT TO HANDLE NOT FOUND?????????
+
+exports.deleteTour = async (req, res) => {
+  try {
+    await Tour.findByIdAndDelete(req.params.id);
+    //Dont send any response body to the client
+    res.status(204).json({ status: 'success', data: null });
+  } catch (err) {
+    res.status(404).json({ status: 'fail', message: err });
+  }
 };
+//EXTRACTED
+// if (req.params.id * 1 > tours.length)
+//   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+//SEND MEANINGFULL MESSAGE
