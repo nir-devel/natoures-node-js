@@ -44,12 +44,26 @@ exports.getAllTours = async (req, res) => {
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`); // let queryStr = JSON.stringify(queryObj);
     //console.log(`getAllTours(): queryStr after replace.query:${queryStr}`);
 
-    console.log(JSON.parse(queryStr)); //{ difficulty: { '$gte': '5' } } -> OK JSON OBJECT!!
-    console.log(queryStr); //{"difficulty":{"$gte":"5"}} - > OK STRING
+    // console.log(JSON.parse(queryStr)); //{ difficulty: { '$gte': '5' } } -> OK JSON OBJECT!!
+    // console.log(queryStr); //{"difficulty":{"$gte":"5"}} - > OK STRING
 
     // console.log(JSON.parse(queryStr));
     //THE find method recieves an object - not a String
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
+
+    //FEATURE 2 - SROTING
+    if (req.query.sort) {
+      //console.log(req.query.sort); //OK price,duration
+      const sortBy = req.query.sort.split(',').join(' ');
+      console.log(sortBy); // //OK price duration
+
+      //CHAIN the sort functionality into the query
+      query = query.sort(req.query.sort);
+    }
+    //Provide default sorting on the createdAt field in descending order - newest on top
+    else {
+      query.sort('-createdAt');
+    }
 
     //EXECUTE THE QUERY - with await
     const tours = await query;
