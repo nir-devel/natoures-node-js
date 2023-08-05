@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
-  console.log('INSIDE MY MIDDLEWARE');
+  //console.log('INSIDE MY MIDDLEWARE');
   next();
 });
 

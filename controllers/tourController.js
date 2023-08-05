@@ -31,32 +31,29 @@ exports.checkBody = (req, res, next) => {
 exports.getAllTours = async (req, res) => {
   // const requestedAt = Date.now().toString();
   try {
-    console.log(req.query);
-    //CREATE A HARD COPY of the req.query (to prevent modification on the paramater) using ES6 : destructring the req.query into an object
+    console.log(`getAllTours(): req.query:`, req.query);
+    //BUILD QUERY - CREATE A HARD COPY of the req.query (to prevent modification on the paramater) using ES6 : destructring the req.query into an object
+    //1.A: FILTTERING
     const queryObj = { ...req.query };
-
-    //Create an array of all properties I want to exclude
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
-
-    //Remove from the queryObj object  the excludedFields - using the delete operator
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    /**TEST: OK 
-     * req.query: { difficulty: 'easy', page: '2', sort: '8', limit: '10', fields: '23' }
-       queryObj after excluding the 4 query params: { difficulty: 'easy' }
-     */
-    //console.log('queryObj after excluding the 4 query params:', queryObj);
-    //TEST IF THE HARD COPY IS DIFFERENT AFTER REMOVING THE fields
-    // console.log('req.query:', req.query);
-    // console.log('queryObj:', queryObj);
+    //1.B: ADVANCED FILTTERING
+    // 1B) Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`); // let queryStr = JSON.stringify(queryObj);
+    //console.log(`getAllTours(): queryStr after replace.query:${queryStr}`);
 
-    //Note - the queryObj has the same syntax as the Mongoosse qequires
-    // const tours = await Tour.find(queryObj);
-    //BUILD THE QUERY
-    const query = Tour.find(queryObj);
+    console.log(JSON.parse(queryStr)); //{ difficulty: { '$gte': '5' } } -> OK JSON OBJECT!!
+    console.log(queryStr); //{"difficulty":{"$gte":"5"}} - > OK STRING
+
+    // console.log(JSON.parse(queryStr));
+    //THE find method recieves an object - not a String
+    const query = Tour.find(JSON.parse(queryStr));
 
     //EXECUTE THE QUERY - with await
     const tours = await query;
+    //MongoDB  filter object in the query with gte : {difficulty:'easy', duration:{$gte:4}}
 
     //SNED RESOPNSE
     res

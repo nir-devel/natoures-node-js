@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "start:prod": "NODE_ENV=production nodemon server.js"
+    "start:prod": "NODE_ENV=production nodemon server.js",
+    "test": "mocha"
   },
   "author": "Nir",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "chai": "^4.3.7",
     "eslint": "^8.46.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.9.0",
@@ -23,6 +25,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.33.1",
+    "mocha": "^10.2.0",
     "prettier": "^3.0.0"
   }
 }
