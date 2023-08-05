@@ -4,15 +4,15 @@ const Tour = require('./../models/tourModel');
 // console.log(Tour);
 
 // OK
-exports.checkBody = (req, res, next) => {
-  if (!req.body.name || !req.body.price)
-    return res.status(400).json({
-      status: 'fail',
-      message: 'Missing name or price',
-    });
+// exports.checkBody = (req, res, next) => {
+//   if (!req.body.name || !req.body.price)
+//     return res.status(400).json({
+//       status: 'fail',
+//       message: 'Missing name or price',
+//     });
 
-  next();
-};
+//   next();
+// };
 
 //WRONG - NO ID PARAM IN THE URL OF THE POST REQUEST!
 // exports.checkBody = (req, res, next, val) => {
@@ -27,6 +27,23 @@ exports.checkBody = (req, res, next) => {
 //   next();
 // };
 
+/**My Middleware for Alias a demended URL
+ * 
+ * Essentially I build a request with a query params as if the user did this in POSTMAN
+ * http://localhost:3000/api/v1/tours/top-5-cheap
+ This middleware will be called by the tourRoutes when a request for /top-5-cheap' : 
+ This function will prefill some req params before it will get 
+ to the getAllTours
+ NOTE: set to Strings!
+ * 
+ *
+ */
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingAverage,summary,difficulty';
+  next();
+};
 //ROUTES
 exports.getAllTours = async (req, res) => {
   // const requestedAt = Date.now().toString();
@@ -65,6 +82,7 @@ exports.getAllTours = async (req, res) => {
       query.sort('-createdAt');
     }
 
+    ///////////////////////////////////////////////////
     //Feature 3: Fields limiting - PROJECTING(Not if the user will pass a field with minus - the mongo will not search for it)
     if (req.query.fields) {
       const fields = req.query.fields.split(',').join(' ');
@@ -76,6 +94,28 @@ exports.getAllTours = async (req, res) => {
     //exclude the __v of MONGOOSE - if the user did not specify it in the url
     else {
       query = query.select('-__v');
+    }
+
+    //////////////////////////////////////////
+    //Feature  4 : Pagination
+    //Mongoose Examle: query.skip(2).limit(10)
+    //page=2&limit=10, 1-10,page1, 11-20, page2
+
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+
+    //Calclulate the skip value
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    //Dont need this! I dont need to throw when the there are no results
+    if (req.query.page) {
+      const count = await Tour.countDocuments();
+      console.log(`count = ${count}`);
+      console.log(`skip = $${skip}`);
+
+      if (skip >= count) throw new Error('Page does not exists');
     }
     //EXECUTE THE QUERY - with await
     const tours = await query;

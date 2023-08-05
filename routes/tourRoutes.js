@@ -16,8 +16,16 @@ const router = express.Router();
 //Extract the code above to the checkID method in the controller and pass it to router.param
 //router.param('id', tourController.checkID);
 
+///////////////IMPORTANT - ALIAS ROUTING
+//CREATE A SPECIAL ROUTE FOR THE URL '/top-5-cheap'
+///////////////////////
+router
+  .route('/top-5-cheap')
+  .get(tourController.aliasTopTours, tourController.getAllTours);
+
 router
   .route('/')
+
   .get(tourController.getAllTours)
   // .post(tourController.checkBody, tourController.createTour);
   .post(tourController.createTour);
