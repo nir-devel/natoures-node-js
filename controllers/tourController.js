@@ -58,13 +58,25 @@ exports.getAllTours = async (req, res) => {
       console.log(sortBy); // //OK price duration
 
       //CHAIN the sort functionality into the query
-      query = query.sort(req.query.sort);
+      query = query.sort(sortBy);
     }
     //Provide default sorting on the createdAt field in descending order - newest on top
     else {
       query.sort('-createdAt');
     }
 
+    //Feature 3: Fields limiting - PROJECTING(Not if the user will pass a field with minus - the mongo will not search for it)
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      //update the query - add the select option
+      console.log(fields);
+      query = query.select(fields);
+      //query =query.select('name duration ')
+    }
+    //exclude the __v of MONGOOSE - if the user did not specify it in the url
+    else {
+      query = query.select('-__v');
+    }
     //EXECUTE THE QUERY - with await
     const tours = await query;
     //MongoDB  filter object in the query with gte : {difficulty:'easy', duration:{$gte:4}}
