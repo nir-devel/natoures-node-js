@@ -242,6 +242,49 @@ exports.deleteTour = async (req, res) => {
     res.status(404).json({ status: 'fail', message: err });
   }
 };
+
+/////////////////////////////////////////
+//AGGREGATE PIPELINE
+exports.getTourStats = async (req, res) => {
+  try {
+    //MUST AWAIT - OTHERWISE I WILL GET THE JSON PIPELINE - BUT I WANT THE DAT OF THE PROMISE
+    //Tour.aggregatge() return an Aggregate object , find() returns a Query object
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingAverage: { $gte: 4.5 } },
+      },
+      {
+        $group: {
+          // _id: null,
+          _id: { $toUpper: '$difficulty' },
+          // _id: '$ratingAverage',
+          numTours: { $sum: 1 },
+          numRatings: { $sum: '$ratingQuantity' },
+          avgRating: { $avg: '$ratingAverage' },
+          avgPrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' },
+        },
+      },
+      //Here I have only the documents from the last stage => I have limited fields
+      //Use 1 : for ascending
+      // { $sort: { avgPrice: -1 } },
+      { $sort: { avgPrice: 1 } },
+
+      //REPEAT STAGES (repeat match stage) - After the group - just for demo - OK
+      //The id is the difficulty! select all not easy tours
+      // { $match: { _id: { $ne: 'EASY' } } },
+    ]);
+    //Send the response
+    res.status(200).json({ status: 'success', data: { stats } });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
+
 //EXTRACTED
 // if (req.params.id * 1 > tours.length)
 //   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
