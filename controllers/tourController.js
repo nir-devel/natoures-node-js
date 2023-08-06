@@ -1,6 +1,7 @@
 //const fs = require('fs');
 //Controller depend on my  Model module
 const Tour = require('./../models/tourModel');
+const APIFeatures = require('./../utils/apiFeatures');
 // console.log(Tour);
 
 // OK
@@ -44,81 +45,111 @@ exports.aliasTopTours = (req, res, next) => {
   req.query.fields = 'name,price,ratingAverage,summary,difficulty';
   next();
 };
+
+// class APIFeatures {
+//   constructor(query, queryString) {
+//     this.query = query;
+//     this.queryString = queryString;
+//   }
+
+//   filter() {
+//     // const queryObj = { ...req.query };//BEFORE REFACTORING -THIS CODE WAS IN THE CONTROLLER //IMPORTANT !!  THIS IS BEFORE REFACTORING ! NOW THIS APIFeatures class has no access to req.query //Basic Filttering
+//     const queryObj = { ...this.queryString };
+//     const excludedFields = ['page', 'sort', 'limit', 'fields'];
+//     excludedFields.forEach((el) => delete queryObj[el]);
+
+//     // ADVANCED FILTTERING
+//     let queryStr = JSON.stringify(queryObj);
+//     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`); // let queryStr = JSON.stringify(queryObj);
+
+//     /**IMPORTANT
+//      * In this class - I am not depend on the Tour Resource - The Model is set already in the query property
+//      *
+//      * Remove this - this was before the refactoring - Now I am not depend on the Tour Resource
+//      */
+//     //BEFORE REFACTORING TO THIS CLASS
+//     // let query = Tour.find(JSON.parse(queryStr));
+
+//     //AFTER REFACTORING: update the this.query - add the find query
+//     this.query = this.query.find(JSON.parse(queryStr));
+
+//     //DONT RETURN THE QUERY !
+//     //return this.query;
+//     return this;
+//   }
+
+//   //Will be chain after the filter
+//   sort() {
+//     // if (req.query.sort) {
+//     if (this.queryString.sort) {
+//       //console.log(req.query.sort); //OK price,duration
+//       const sortBy = this.queryString.sort.split(',').join(' ');
+//       console.log(sortBy); // //OK price duration
+
+//       //CHAIN the sort functionality into the query
+//       this.query = this.query.sort(sortBy);
+//     }
+//     //Provide default sorting on the createdAt field in descending order - newest on top
+//     else {
+//       this.query.sort('-createdAt');
+//     }
+
+//     return this;
+//   }
+
+//   limitFields() {
+//     // if (req.query.fields) {
+//     if (this.queryString.fields) {
+//       const fields = this.queryString.fields.split(',').join(' ');
+//       //update the query - add the select option
+//       console.log(fields);
+//       //query = query.select(fields);
+//       this.query = this.query.select(fields);
+
+//       //query =query.select('name duration ')
+//     }
+//     //exclude the __v of MONGOOSE - if the user did not specify it in the url
+//     else {
+//       // query = query.select('-__v');
+//       this.query = this.query.select('-__v');
+//     }
+
+//     return this;
+//   }
+
+//   paginate() {
+//     const page = this.queryString.page * 1 || 1;
+//     const limit = this.queryString.limit * 1 || 100;
+
+//     //Calclulate the skip value
+//     const skip = (page - 1) * limit;
+
+//     this.query = this.query.skip(skip).limit(limit);
+
+//     return this;
+//     //Dont need this! I dont need to throw when the there are no results
+//     // if (req.query.page) {
+//     //   const count = await Tour.countDocuments();
+//     //   console.log(`count = ${count}`);
+//     //   console.log(`skip = $${skip}`);
+
+//     //   if (skip >= count) throw new Error('Page does not exists');
+//   }
+// }
+
 //ROUTES
 exports.getAllTours = async (req, res) => {
   // const requestedAt = Date.now().toString();
   try {
-    console.log(`getAllTours(): req.query:`, req.query);
-    //BUILD QUERY - CREATE A HARD COPY of the req.query (to prevent modification on the paramater) using ES6 : destructring the req.query into an object
-    //1.A: FILTTERING
-    const queryObj = { ...req.query };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
-    excludedFields.forEach((el) => delete queryObj[el]);
-
-    //1.B: ADVANCED FILTTERING
-    // 1B) Advanced filtering
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`); // let queryStr = JSON.stringify(queryObj);
-    //console.log(`getAllTours(): queryStr after replace.query:${queryStr}`);
-
-    // console.log(JSON.parse(queryStr)); //{ difficulty: { '$gte': '5' } } -> OK JSON OBJECT!!
-    // console.log(queryStr); //{"difficulty":{"$gte":"5"}} - > OK STRING
-
-    // console.log(JSON.parse(queryStr));
-    //THE find method recieves an object - not a String
-    let query = Tour.find(JSON.parse(queryStr));
-
-    //FEATURE 2 - SROTING
-    if (req.query.sort) {
-      //console.log(req.query.sort); //OK price,duration
-      const sortBy = req.query.sort.split(',').join(' ');
-      console.log(sortBy); // //OK price duration
-
-      //CHAIN the sort functionality into the query
-      query = query.sort(sortBy);
-    }
-    //Provide default sorting on the createdAt field in descending order - newest on top
-    else {
-      query.sort('-createdAt');
-    }
-
-    ///////////////////////////////////////////////////
-    //Feature 3: Fields limiting - PROJECTING(Not if the user will pass a field with minus - the mongo will not search for it)
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      //update the query - add the select option
-      console.log(fields);
-      query = query.select(fields);
-      //query =query.select('name duration ')
-    }
-    //exclude the __v of MONGOOSE - if the user did not specify it in the url
-    else {
-      query = query.select('-__v');
-    }
-
-    //////////////////////////////////////////
-    //Feature  4 : Pagination
-    //Mongoose Examle: query.skip(2).limit(10)
-    //page=2&limit=10, 1-10,page1, 11-20, page2
-
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 100;
-
-    //Calclulate the skip value
-    const skip = (page - 1) * limit;
-
-    query = query.skip(skip).limit(limit);
-
-    //Dont need this! I dont need to throw when the there are no results
-    if (req.query.page) {
-      const count = await Tour.countDocuments();
-      console.log(`count = ${count}`);
-      console.log(`skip = $${skip}`);
-
-      if (skip >= count) throw new Error('Page does not exists');
-    }
-    //EXECUTE THE QUERY - with await
-    const tours = await query;
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    //The features.query has the find method on it
+    //EXECUTING THE QUERY
+    const tours = await features.query;
+    // const tours = await query;
     //MongoDB  filter object in the query with gte : {difficulty:'easy', duration:{$gte:4}}
 
     //SNED RESOPNSE
@@ -128,12 +159,6 @@ exports.getAllTours = async (req, res) => {
   } catch (err) {
     res.status(404).json({ status: 'failed', message: err });
   }
-  // const tours = await Tour.find({ duration: 5, difficulty: 'easy' });
-  // const tours = await Tour.find()
-  //   .where('duration')
-  //   .equals(5)
-  //   .where('difficulty')
-  //   .equals('easy');
 };
 
 exports.getTour = async (req, res) => {
