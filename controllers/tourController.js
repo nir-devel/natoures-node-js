@@ -251,7 +251,8 @@ exports.getTourStats = async (req, res) => {
     //Tour.aggregatge() return an Aggregate object , find() returns a Query object
     const stats = await Tour.aggregate([
       {
-        $match: { ratingAverage: { $gte: 4.5 } },
+        //Just a query
+        $match: { ratingsAverage: { $gte: 4.5 } },
       },
       {
         $group: {
@@ -277,6 +278,71 @@ exports.getTourStats = async (req, res) => {
     ]);
     //Send the response
     res.status(200).json({ status: 'success', data: { stats } });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
+
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    //Get the year from the req.params
+    const year = req.params.year * 1; //2021
+
+    console.log(year);
+    //Create
+    //await
+    const plan = await Tour.aggregate([
+      //Define the  unwind stage - First Stage
+      {
+        /**
+         * UNWIND will: Deconstructo an array field from the input documents and then output
+         * one document for each element of the array!
+         * this is what I want - one tour for each of one of the dates in the array
+         */
+        //The field with the array that I want to UNWIND is startDate
+        $unwind: '$startDates',
+      },
+      {
+        //Select the date which is greather then the January 1st of the current year
+        //and less then or equal of the December 31st of the document year
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          //COUNT THE TOURS
+          numTourStarts: { $sum: 1 },
+          tours: { $push: `$name` },
+        },
+      },
+      {
+        $addFields: { month: '$_id' },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      {
+        //Sort in desceinding order to get the busiest month on top
+        $sort: { numTourStarts: -1 },
+      },
+      {
+        //Like the limit in the Query ..
+        //
+        $limit: 12,
+      },
+    ]);
+
+    res.status(200).json({ status: 'success', data: { plan } });
   } catch (err) {
     res.status(404).json({
       status: 'fail',

@@ -15,11 +15,6 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD,
 );
 
-const tours = JSON.parse(
-  ///The '.' is relative to the folder on which the node appliaction starts - the home folder
-  //I need to use the __dirname - which availabe anywhere(if I use it then it will be the current folder- What I want!)
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'),
-);
 // CONNECT TO THE HOSTED DB: RETUREN A PORIMSE! I need to handle it - OK !!
 mongoose
   .connect(DB, {
@@ -30,6 +25,11 @@ mongoose
   // HANDLETHE PROIMSE - RESOLVED VALUE IS THE NEW CONNECTION
   .then(() => console.log('CONNECTION ESTABLIHSED!'));
 
+const tours = JSON.parse(
+  ///The '.' is relative to the folder on which the node appliaction starts - the home folder
+  //I need to use the __dirname - which availabe anywhere(if I use it then it will be the current folder- What I want!)
+  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'),
+);
 //IMPORT DATA INTO DB
 const importData = async function () {
   try {

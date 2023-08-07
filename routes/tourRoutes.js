@@ -26,6 +26,9 @@ router
 //Route to statistics
 router.route('/tour-stats').get(tourController.getTourStats);
 
+//Route will return -  find the busiest month of a given year:
+router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+
 router
   .route('/')
 
