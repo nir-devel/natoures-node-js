@@ -143,16 +143,20 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
-    // secretTour: {
-    //   type: Boolean,
-    //   default: false,
-    // },
   },
-  // {
-  //   toJSON: { virtuals: true },
-  //   toObject: { virtuals: true },
-  // },
+  //OPTIONS OBJECT
+  {
+    //Each time the data is outputed as a JSON - I want the V.P to be part of the output
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+/////////////////////////////////////
+//VIRTUAL PROPERTIES: Will not be persisted in the DB - will be availbel
+tourSchema.virtual('durationWeeks').get(function () {
+  return this.duration / 7;
+});
 
 /**
    * Create a tour model from the shcema
