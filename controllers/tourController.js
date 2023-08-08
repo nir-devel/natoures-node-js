@@ -157,7 +157,7 @@ exports.getAllTours = async (req, res) => {
       .status(200)
       .json({ status: 'success', results: tours.length, data: { tours } });
   } catch (err) {
-    res.status(404).json({ status: 'failed', message: err });
+    res.status(404).json({ status: 'failed', message: err.message });
   }
 };
 
@@ -200,9 +200,9 @@ exports.createTour = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('* * ERROR- TourController', err);
+    console.error('* * ERROR- TourController', err.message);
     //SEND MEANINGFUL ERROR MESSAGE TO THE CLIENT
-    res.status(400).json({ status: 'failed', message: 'Invlaid data sent' });
+    res.status(400).json({ status: 'failed', message: err.message });
 
     // res.status(400).json({ status: 'failed', message: err });
   }
