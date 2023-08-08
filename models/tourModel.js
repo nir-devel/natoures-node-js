@@ -144,6 +144,10 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   //OPTIONS OBJECT
   {
@@ -169,10 +173,40 @@ tourSchema.pre('save', function (next) {
   //OK : print the current processed Document
   //console.log(this);
   this.slug = slugify(this.name, { lower: true });
-  console.log(this);
+  // console.log(this);
   //SINCE I HAVE ANOTHER PRE HOOK - I MUST CALL NEXT!
   next();
 });
+
+///////////////////////////////////////
+//QUERY MIDDLEWARE  - Processing Query - NOT DOCUMENT = >this referes to the current Query
+// tourSchema.pre('find', function (next) {
+tourSchema.pre(/^find/, function (next) {
+  //Select all tours with secretTour is false
+  this.find({ secretTour: { $ne: true } });
+  //set the start property on the file on the Query object
+  //In m.s
+  this.start = Date.now();
+  //OK - RETURNS ONE TOUR WITH SECRET TOUR ture
+  //this.find({ secretTour: true });
+  //console.log(tours);
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  //console.log(docs);
+  console.log(Date.now() - this.start);
+  next();
+});
+/**
+   * Create a tour model from the shcema
+  MODELS NAMES VARIABLES - always start with capital - convention
+  Models are used with the same JS ES6 CLASSES SYNTAX
+  */
+const Tour = mongoose.model('Tour', tourSchema);
+
+// DEFAULT EXPORT OF NODE MODULES(SINGLE ITEM):
+module.exports = Tour;
 
 //Second Middleware function on the same PRE HOOK(HOOK = 'save')
 // tourSchema.pre('save', function (next) {
@@ -188,13 +222,3 @@ tourSchema.pre('save', function (next) {
 //   //BUT GOOD PRACTIEC(the request is stuck ! but the tour has been persisted)
 //   next();
 // });
-
-/**
-   * Create a tour model from the shcema
-  MODELS NAMES VARIABLES - always start with capital - convention
-  Models are used with the same JS ES6 CLASSES SYNTAX
-  */
-const Tour = mongoose.model('Tour', tourSchema);
-
-// DEFAULT EXPORT OF NODE MODULES(SINGLE ITEM):
-module.exports = Tour;
