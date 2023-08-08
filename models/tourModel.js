@@ -193,11 +193,24 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
+/////////////////////////
+//REGULAR EXPRESSINO - TO APPLY THE LOGIN ON ALL findXXX - prevent code cuplication!
+
 tourSchema.post(/^find/, function (docs, next) {
   //console.log(docs);
   console.log(Date.now() - this.start);
   next();
 });
+
+///////////////////////////////////////
+//Aggragtion Middleware - apply the filter of the secret tour on the request for statistics
+tourSchema.pre('aggregate', function (next) {
+  //Adding a new stage element to the begining  of the array
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  console.log(this.pipeline());
+  next();
+});
+
 /**
    * Create a tour model from the shcema
   MODELS NAMES VARIABLES - always start with capital - convention
