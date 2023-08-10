@@ -3,6 +3,7 @@
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const APIFeatures = require('./../utils/apiFeatures');
+const AppError = require('../utils/appError');
 // console.log(Tour);
 
 // OK
@@ -71,8 +72,15 @@ exports.getTour = catchAsync(async (req, res, next) => {
   /*NOTE:findById() - Shorthand for findOne of Mongoose: 
       Tour.findOne({_id: req.param.id})
     */
+
   const tour = await Tour.findById(req.params.id);
   //console.log(`Inside getTour() - found tour: ${tour}`);
+  //HANDLE TOUR NOT FOUND(WITH VALID ID) by
+  //creating my AppError , pass it to next, and return immedialty
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(200).json({ status: 'success', data: { tour } });
   err;
   res.status(404).json({ status: 'fail', data: null });
@@ -107,6 +115,7 @@ exports.createTour = catchAsync(async (req, res, next) => {
     },
   });
 });
+
 //HOW TO HANDLE THE CASE WHEN THE ID NOT FOUND???
 exports.updateTour = catchAsync(async (req, res, next) => {
   //Read the id from url , find the tour , update the tour
@@ -116,6 +125,10 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     //The Mongoose API will handle it !Not me in the catch!
     runValidators: true,
   });
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
 
   //set the response body with the updated tour
   res.status(200).json({
@@ -131,7 +144,11 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 //HOT TO HANDLE NOT FOUND?????????
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
-  await Tour.findByIdAndDelete(req.params.id);
+  const tour = await Tour.findByIdAndDelete(req.params.id);
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
   //Dont send any response body to the client
   res.status(204).json({ status: 'success', data: null });
   res.status(404).json({ status: 'fail', message: err });
