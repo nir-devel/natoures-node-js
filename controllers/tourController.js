@@ -77,10 +77,10 @@ exports.getTour = catchAsync(async (req, res, next) => {
   //console.log(`Inside getTour() - found tour: ${tour}`);
   //HANDLE TOUR NOT FOUND(WITH VALID ID) by
   //creating my AppError , pass it to next, and return immedialty
+  //THIS ERROR WILL BE MARKED AS OPERATOINAL BY THE AppError constructor!
   if (!tour) {
     return next(new AppError('No tour found with that ID', 404));
   }
-
   res.status(200).json({ status: 'success', data: { tour } });
   err;
   res.status(404).json({ status: 'fail', data: null });

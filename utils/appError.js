@@ -2,6 +2,7 @@ class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
 
+    // console.log(`inside AppError - mode: ${process.env.NODE_ENV}`);
     this.statusCode = statusCode;
 
     /*IMPORTANT: this property is derived from the statusCode
@@ -11,6 +12,7 @@ class AppError extends Error {
      */
     this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
 
+    //PROD VS DEV
     //All instances of this class will be created by OPERATIONL ERRORS
     this.isOperational = true;
 

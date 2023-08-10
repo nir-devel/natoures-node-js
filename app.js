@@ -11,10 +11,10 @@ const app = express();
 //////////////////
 //ENV VARIALBES
 // console.log(app.get('env'));
-console.log(process.env.NODE_ENV);
+// console.log(process.env.NODE_ENV);
 
-//SETUP LOGIN TO DEV ONLY
-console.log(process.env.NODE_ENV);
+// //SETUP LOGIN TO DEV ONLY
+// console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
 //OUTPUT :development
