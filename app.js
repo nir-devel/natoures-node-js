@@ -32,10 +32,10 @@ app.use(express.json());
 //static content from the f.s
 app.use(express.static(`${__dirname}/public`));
 
-app.use((req, res, next) => {
-  //console.log('INSIDE MY MIDDLEWARE');
-  next();
-});
+// app.use((req, res, next) => {
+//   //console.log('INSIDE MY MIDDLEWARE');
+//   next();
+// });
 
 //Middle ware that manipulate the request - write the current time to the request and response
 app.use((req, res, next) => {
@@ -54,4 +54,13 @@ const port = 3000;
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
+//IF I REACH HERE - THE REQUEST RESPONSE HAS NOT BEEN FINISHED -
+//STEP 1 TO HANDLE UNHANDLED ROUTES
+app.all('*', (req, res, next) => {
+  res.status(404).json({
+    status: 'fail',
+    message: `Can't find ${req.originalUrl} on this server`,
+  });
+  next();
+});
 module.exports = app;

@@ -32,7 +32,11 @@ mongoose
   // HANDLETHE PROIMSE - RESOLVED VALUE IS THE NEW CONNECTION
   .then(() => console.log('CONNECTION ESTABLIHSED!'));
 
+
+
 const port = process.env.PORT || 3000;
+
+
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
 });

@@ -137,6 +137,8 @@ exports.aliasTopTours = (req, res, next) => {
 //   }
 // }
 
+
+
 //ROUTES
 exports.getAllTours = async (req, res) => {
   // const requestedAt = Date.now().toString();
