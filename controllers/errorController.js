@@ -1,3 +1,31 @@
+const sendErrorDev = (err, res) => {
+  console.log('inside sendErrorDev() - Dev productoin');
+  res.status(err.statusCode).json({
+    status: err.status,
+    error: err,
+    message: err.message,
+    stack: err.stack,
+  });
+};
+
+const sentErrorProd = (err, res) => {
+  console.log('inside sendErrorProd() - Dev Production');
+  if (err.isOperational) {
+    res.status(err.statusCode).json({
+      status: err.status,
+      //error: err,
+      message: err.message,
+      //stack: err.stack,
+    });
+  } else {
+    //Log it for myself - to the console
+    console.error('ERROR * * ', err);
+    //Programming errors or unkonwn error - SEND GENERERIC INFO TO THE USER - DONT LEAD DETAILS
+    res
+      .status(500)
+      .json({ status: 'error', message: 'Something went very wrong' });
+  }
+};
 //API SINGLE METHOD !!
 module.exports = (err, req, res, next) => {
   //DEMO OF err.stack
@@ -11,55 +39,6 @@ module.exports = (err, req, res, next) => {
   }
   //PROD - FEW
   else if (process.env.NODE_ENV === 'production') {
-    sendErrorProd(err, res);
-  }
-};
-
-////////////////////////////////////////////////
-//HELPER CLASS - PRIVATE TO THIS MOUDLE
-const sendErrorDev = (err, res) => {
-  console.log(`Inside sendErrorDev - mod: ${process.env.NODE_ENV}`);
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
-  });
-};
-
-/** 
- * PROD ENVIRONMENT - MOST IMPORTANT
- * IF  - OPERATIONAL err.isPerational :
-     err is an  instance of my AppError class 
-     and I created it already with correct status and message
-
-  ELSE: it is a bug in my code or 3 party library 
-    Send few messages - and 500 status code
-
-
- */
-const sendErrorProd = (err, res) => {
-  console.log(`Inside sendErrorProd - mod: ${process.env.NODE_ENV}`);
-
-  if (err.isOperational) {
-    console.log(`isOperation = ${err.isOperational}`);
-    //Operational Errors: tursted error: send message to the client
-    res.status(err.statusCode).json({
-      status: err.status,
-      //error: err,
-      message: err.message,
-      //stack: err.stack,
-    });
-    //Programming or other unknown error: Dont leadk error details to the client!
-    //But for me - developer - log the error to the console
-  } else {
-    console.log(`isOperational = ${err.isOperational}`);
-    ///LOG THE ERROR
-    console.error('ERROR * *', err);
-
-    //SEND GENERIC MESSAGE TO THE CLIENT(few details - it's my bug error) - UNKNOW ERRORS- Can not fix
-    res
-      .status(500)
-      .json({ status: 'error', message: 'Something went very wrong' });
+    sentErrorProd(err, res);
   }
 };
