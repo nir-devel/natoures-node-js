@@ -1,8 +1,11 @@
+// const promisify = require('util').promisify;
+const { promisify } = require('util');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 
 const AppError = require('./../utils/appError');
+const { decode } = require('punycode');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -22,6 +25,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
   });
 
+  console.log('in sighnup method - new user created:');
+  console.log(newUser);
   //Signin the token(in Mongoose db the id is _id)
   //ex - after the time I specify in the 3 parameters the jwt will be expired
   const token = signToken(newUser._id);
@@ -80,9 +85,13 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * NOTES:
+ *  1.Promisify the jwt.verify callbased API function with async behaviour
+ *  2.ERROR HANDLING: instead of handling errors in this method - delgete to my global m.w error handling
+ */
 exports.protect = catchAsync(async (req, res, next) => {
-  //STEP 1: Check if there is a token in the request(if not 400)
-
+  //STEP 1: Check if there is a token in the request(if not 400) => DONE!!!
   let token;
   if (
     req.headers.authorization &&
@@ -95,11 +104,40 @@ exports.protect = catchAsync(async (req, res, next) => {
     return next(
       new AppError('You are not logged in! Please log in to get access.', 401),
     );
+  ////////////////////////////////////////////////
   //STEP 2:VERIFICATION  - verifythe token (the JWT algorithm verifies if the signature is valid or not => if the token is valid or not)
+  ////////////////////////////////////
+  //Possible 2 Errors of JWT : JsonWebTokenError, and token expired
+  //console.log(decoded) - ok  : { id: '64de91425cb8d017a4397ce4', iat: 1692347603, exp: 1700123603 }
+  //SAME decoded value for andy token generated - as long as the payload is not tempared
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   //STEP 3: CHECK IF USER STILL EXISTS
+  //the id I put in the payload is exactly for this case - when I need to check if the user exists
+  const freshUser = await User.findById(decoded.id);
 
+  //WHY HE DID NOT  HANDLE THIS ERROR WHEN USER DELETED IN PRODUCTION - NO MESSAGE IN POSTMAN?? JUST DEV WORKS!
+  if (!freshUser)
+    return next(
+      new AppError(
+        'The user belonging to the token does no longer exist.',
+        401,
+      ),
+    );
+
+  console.log(
+    `User changed password after: ${freshUser.changedPasswordAfter(
+      decoded.iat,
+    )}`,
+  );
   //STEP 4:CHECK IF USER CHAGNED PASSWORD AFTER THE TOKEN WAS ISSUED
+  if (freshUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! Please log in again.', 401),
+    );
+  }
 
+  //For later sections
+  req.user = freshUser;
   next();
 });

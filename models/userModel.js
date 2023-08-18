@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 
 const bcrypt = require('bcryptjs');
+const { JsonWebTokenError } = require('jsonwebtoken');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -32,10 +33,7 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords are not the same',
     },
   },
-  passwordChangedAt: {
-    type: Date,
-    select: false,
-  },
+  passwordChangedAt: Date,
 });
 
 //Executeh this pre hook save middleware only when the user update the password or new user is created
@@ -66,6 +64,27 @@ userSchema.methods.correctPassword = async function (
   userPassword,
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
+  //most of the documents will not have this proeprty defined (most of users dont change their passwd)
+  if (this.passwordChangedAt) {
+    console.log('PASSWORD CHANGED');
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
+    console.log(changedTimestamp, JWTTimeStamp);
+    return JWTTimeStamp < changedTimestamp;
+    // console.log(
+    //   `user changed password after last login? ${
+    //     changedTimestamp > JWTTimeStamp
+    //   }`,
+    // );
+  }
+
+  //DEFAULT VALUE : user did not changed the passwd after the last login when the token was issued
+  return false;
 };
 const User = mongoose.model('User', userSchema);
 
