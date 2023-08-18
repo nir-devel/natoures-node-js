@@ -9,6 +9,7 @@ const signToken = (id) => {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
+
 exports.signup = catchAsync(async (req, res, next) => {
   //Create a user with only necearry properties
   //   const newUser = await User.create(req.body);
@@ -77,4 +78,28 @@ exports.login = catchAsync(async (req, res, next) => {
       token,
     },
   });
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+  //STEP 1: Check if there is a token in the request(if not 400)
+
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token)
+    return next(
+      new AppError('You are not logged in! Please log in to get access.', 401),
+    );
+  //STEP 2:VERIFICATION  - verifythe token (the JWT algorithm verifies if the signature is valid or not => if the token is valid or not)
+
+  //STEP 3: CHECK IF USER STILL EXISTS
+
+  //STEP 4:CHECK IF USER CHAGNED PASSWORD AFTER THE TOKEN WAS ISSUED
+
+  next();
 });

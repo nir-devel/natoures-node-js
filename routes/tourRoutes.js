@@ -4,6 +4,8 @@ const express = require('express');
 
 const tourController = require(`./../controllers/tourController`);
 
+const authController = require(`./../controllers/authController`);
+
 const router = express.Router();
 
 //NO NEED THIS AFTER REFACTORING TO MONGODB WHICH WILL HANDLE THE ID GENERATION AND VALIDATION!
@@ -31,8 +33,8 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 router
   .route('/')
-
-  .get(tourController.getAllTours)
+  //PLUGIN THE PROTECT MIDDLEWARE TO PROTECT THIS ROUTE
+  .get(authController.protect, tourController.getAllTours)
   // .post(tourController.checkBody, tourController.createTour);
   .post(tourController.createTour);
 router

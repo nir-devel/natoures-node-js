@@ -2,9 +2,10 @@
 const userController = require(`./../controllers/userController`);
 
 const express = require('express');
-
 const router = express.Router();
+
 const authController = require('./../controllers/authController');
+
 //CLIENT END POINTS - AUTHENTICATION
 router.post('/signup', authController.signup);
 
