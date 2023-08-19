@@ -23,6 +23,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
 
   console.log('in sighnup method - new user created:');
@@ -114,10 +115,10 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   //STEP 3: CHECK IF USER STILL EXISTS
   //the id I put in the payload is exactly for this case - when I need to check if the user exists
-  const freshUser = await User.findById(decoded.id);
+  const currentUser = await User.findById(decoded.id);
 
   //WHY HE DID NOT  HANDLE THIS ERROR WHEN USER DELETED IN PRODUCTION - NO MESSAGE IN POSTMAN?? JUST DEV WORKS!
-  if (!freshUser)
+  if (!currentUser)
     return next(
       new AppError(
         'The user belonging to the token does no longer exist.',
@@ -126,18 +127,55 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
 
   console.log(
-    `User changed password after: ${freshUser.changedPasswordAfter(
+    `User changed password after: ${currentUser.changedPasswordAfter(
       decoded.iat,
     )}`,
   );
   //STEP 4:CHECK IF USER CHAGNED PASSWORD AFTER THE TOKEN WAS ISSUED
-  if (freshUser.changedPasswordAfter(decoded.iat)) {
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
       new AppError('User recently changed password! Please log in again.', 401),
     );
   }
 
-  //For later sections
-  req.user = freshUser;
+  //THIS IS USED TO PASS THE ROLES FOR THE NEXT M.W FUNCTION - restrictTo - for authorization
+  req.user = currentUser;
   next();
 });
+
+/**AUTHORIZATION
+ * 1.A HIGH ORDER FUNCTION THAT CREATED AND RETURNS A M.W THAT ACCEPTS ARGS!!
+ *   (I can not do this in m.w DIRECTLRY! )
+ *
+ * 2.TAKES an arbitrary #args (roles)
+ *
+ * 3.CLOUSRE: the inner function has access to the roles -
+ *
+ */
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    // console.log('INSIDE restrictTo m.w: The roles in the rest param:');
+    // roles.forEach((role) => console.log(role));
+    //READ THE user.role set in the last m.w in the stack (the protect for login)
+
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perfomr this action', 403),
+      );
+    }
+    roles.forEach((role) => console.log(role));
+    next();
+  };
+};
+// exports.restrictTo = (...roles) => {
+//   return (req, res, next) => {
+//     // roles ['admin', 'lead-guide']. role='user'
+//     if (!roles.includes(req.user.role)) {
+//       return next(
+//         new AppError('You do not have permission to perform this action', 403),
+//       );
+//     }
+
+//     next();
+//   };
+// };

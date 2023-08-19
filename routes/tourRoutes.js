@@ -37,11 +37,19 @@ router
   .get(authController.protect, tourController.getAllTours)
   // .post(tourController.checkBody, tourController.createTour);
   .post(tourController.createTour);
+
 router
   .route('/:id')
   .get(tourController.getTour)
-  .delete(tourController.deleteTour)
-  .patch(tourController.updateTour);
+  .patch(tourController.updateTour)
+  //ADD AUTORIZATION ON DELETE - TO ALLOWS ONLY admin , tour-guide roles
+  .delete(
+    //Login users m.w
+    authController.protect,
+    //autorization m.w: authorize only admin and lead-guid roles to delete tours
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.deleteTour,
+  );
 
 module.exports = router;
 
