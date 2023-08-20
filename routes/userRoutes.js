@@ -8,8 +8,13 @@ const authController = require('./../controllers/authController');
 
 //CLIENT END POINTS - AUTHENTICATION
 router.post('/signup', authController.signup);
-
 router.post('/login', authController.login);
+
+//FORGOT PASSWORD AND RESET
+router.post('/forgotPassword', authController.forgotPassword);
+router.patch('/resetPassword/:token', authController.resetPassword);
+// router.post('/forget', authController.forgotPassword);
+// router.post('/resetPassword', authController.resetPassword);
 
 //ADMIN END POINTS
 router.param('id', (req, res, next, val) => {

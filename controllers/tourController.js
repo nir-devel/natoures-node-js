@@ -138,7 +138,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     },
   });
 
-  res.status(404).json({ status: 'fail', message: err.message });
+  //res.status(404).json({ status: 'fail', message: err.message });
 });
 
 //HOT TO HANDLE NOT FOUND?????????

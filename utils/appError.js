@@ -2,6 +2,7 @@ class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
 
+    console.log('INSIDE APP ERROR CONSTRUCTOR');
     // console.log(`inside AppError - mode: ${process.env.NODE_ENV}`);
     this.statusCode = statusCode;
 

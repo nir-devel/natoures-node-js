@@ -25,6 +25,7 @@ const handleDuplicateFieldsDB = (err) => {
   const message = `Duplicate field value: ${value}. Please use another value!`;
   return new AppError(message, 400);
 };
+
 const handleValidationErrorDB = (err) => {
   const errors = Object.values(err.errors).map((el) => el.message);
 
@@ -73,6 +74,7 @@ const sendErrorDev = (err, res) => {
 
 const sendErrorProd = (err, res) => {
   // Operational, trusted error: send message to client
+  console.log(`sendErrorProd(): err.name = ${err.name}`);
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
@@ -106,7 +108,7 @@ module.exports = (err, req, res, next) => {
   else if (process.env.NODE_ENV === 'production') {
     let error = { ...err, name: err.name, errmsg: err.errmsg };
 
-    console.log(`INSIDE GLOBAL M.W: ERROR NAME:${error.name}`);
+    console.log(`INSIDE GLOBAL MIDDLEWARE ERROR HANDLER : NAME:${error.name}`);
     /////////////////
     //MONGOOSE/MONGODB ERRORS
     if (error.name === 'CastError') error = handleCastErrorDB(error);

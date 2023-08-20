@@ -168,15 +168,45 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
-// exports.restrictTo = (...roles) => {
-//   return (req, res, next) => {
-//     // roles ['admin', 'lead-guide']. role='user'
-//     if (!roles.includes(req.user.role)) {
-//       return next(
-//         new AppError('You do not have permission to perform this action', 403),
-//       );
-//     }
 
-//     next();
-//   };
-// };
+// exports.forgotPassword = catchAsync(async (req, res, next) => {
+//   //1.Get user based on posted email
+//   const user = await User.findOne({ email: req.body.email });
+
+//   if (!user)
+//     return next(new AppError('There is no user with email address', 404));
+
+//   //2.Genrerate the random token
+//   const resetToken = user.createPasswordResetToken();
+//   //I MODIFY THE DATA - BUT NOT SAVE THE DATA - I NEED TO SAVED IT
+
+//   //DEACTIVATE REQUIRED FIELDS WHEN SAVING A DOCUMENTS!- I want to save aonly the reset token
+//   await user.save({ validateBeforeSave: false });
+
+//   //3Send the token to the user's email
+//   next();
+// });
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  //console.log('FORGET PASSWORD CAres.message = NIR);
+  // console.log('NIRON');
+  // res.json('NIR');
+  //   //1.Get user based on posted email
+  const user = await User.findOne({ email: req.body.email });
+  console.log(user);
+  if (!user)
+    return next(new AppError('There is no user with email address', 404));
+
+  console.log('USER FOUND BY EMAIL:');
+  console.log(user);
+  //   //2.Genrerate the random token
+  const resetToken = user.createPasswordResetToken();
+  //   //I MODIFY THE DATA - BUT NOT SAVE THE DATA - I NEED TO SAVED IT
+
+  //   //DEACTIVATE REQUIRED FIELDS WHEN SAVING A DOCUMENTS!- I want to save aonly the reset token
+  await user.save({ validateBeforeSave: false });
+
+  //   //3Send the token to the user's email
+});
+
+exports.resetPassword = (req, res, next) => {};
