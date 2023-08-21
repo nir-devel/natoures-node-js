@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
-  resetPasswordExpires: Date,
+  passwordResetExpires: Date,
 });
 
 //Executeh this pre hook save middleware only when the user update the password or new user is created

@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 
 const AppError = require('./../utils/appError');
 const { decode } = require('punycode');
+const sendEmail = require('../utils/email');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -188,25 +189,74 @@ exports.restrictTo = (...roles) => {
 // });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  //console.log('FORGET PASSWORD CAres.message = NIR);
-  // console.log('NIRON');
-  // res.json('NIR');
-  //   //1.Get user based on posted email
+  /////////////////////////////
+  //1.Get user based on posted email
+  ///////////////////////////////////
   const user = await User.findOne({ email: req.body.email });
-  console.log(user);
+  //console.log(user);
   if (!user)
     return next(new AppError('There is no user with email address', 404));
 
   console.log('USER FOUND BY EMAIL:');
   console.log(user);
-  //   //2.Genrerate the random token
-  const resetToken = user.createPasswordResetToken();
-  //   //I MODIFY THE DATA - BUT NOT SAVE THE DATA - I NEED TO SAVED IT
 
-  //   //DEACTIVATE REQUIRED FIELDS WHEN SAVING A DOCUMENTS!- I want to save aonly the reset token
+  ///////////////////////////////////
+  //2.Genrerate the random token
+  //////////////////////////////////
+  //This will set the reset token property() and the timeout property for 10 mins
+  const resetToken = user.createPasswordResetToken();
+  //I MODIFY THE DATA - BUT NOT SAVE THE DATA - I NEED TO SAVED IT
+  //DEACTIVATE REQUIRED FIELDS WHEN SAVING A DOCUMENTS!- I want to save aonly the reset token
   await user.save({ validateBeforeSave: false });
 
-  //   //3Send the token to the user's email
+  ///////////////////////////////////////////
+  //3)Send the token to the user's email
+  /////////////////////////////////////////
+  //Recreate the the link to work in dev and in prod
+  //Send the original plain-text password - and not the hashed one -
+  const resetURL = `${req.protocol}://${req.get(
+    'host',
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  //give the user instructions when it opens his email
+  const message = `Forgot your password? Submit a PATCH request with 
+  your new password and password confirm to:${resetURL}.\nIf  didn't  forget your password, please ignore this email! `;
+
+  //SHOULD HANDLE ERRORS - BUT IT IS NOT ENOUGH TO SIMPLY SEND AN ERROR MESSAGE!
+  //BECAUSE I  must TO ALSO SET BACK THE PASSWORD RESET TOKEN AND THE PASSWORD RESET EXPIRED IN THE DB
+  //IT IS NOT ENOUGH TO SEND THE ERROR TO THE GLOBAL M.W ERROR HANDLING - I NEED TO TRY-CATCH BLOCK HERE!
+  try {
+    await sendEmail({
+      //or req.body.email
+      email: user.email,
+      subject: 'Your password reset token(valid for 10min)',
+      message,
+    });
+
+    //To finish the request-response cycle
+    //(DONT SEND THE RESET TOKEN HERE - OTHERWISE ANYONE CAN RESET ANYONE PASSWORD AND TAKE OVER THE ACCOUNT
+    //THAT'S THE ALL REASONE WHY I SEND THE TOKEN TO THE EMAIL ! I ASSUME THE EMAIL IS A SAFE PLACE ONLY THE USER ACCESS TO!
+    res.status(200).json({
+      stautus: 'success',
+      message: 'Token sent to email',
+    });
+  } catch (err) {
+    //ERROR HANDLING - AGIAIN - NOT ENOUGH TO SEND TO G M.W ERROR HANDLING - I NEED TO REMOVE THE resets values from the user document
+    //RESET BOTH TOKEN AND PASSWORD RESET EXPIRES
+
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    //THE LAST 2 LINES ONLY MODIFY THE DATA - BUT DID NOT PERSIST IT - I NEED TO SAVE IT - BY DEACTIVATE THE VALIDATORS OF OTHER FIELDS
+    await user.save({ validateBeforeSave: false });
+
+    //Return a new AppError to the Global Error handling m.w(status code is 500 - it's realy on the server)
+    return next(
+      new AppError(
+        'There was an error sending the email .Try again later',
+        500,
+      ),
+    );
+  }
 });
 
 exports.resetPassword = (req, res, next) => {};
