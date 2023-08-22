@@ -64,6 +64,20 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+//THIS PRE SAVE HOOK M.W FUNCTION WILL RUN RIGHT BEFORE A NEW DOCUMENT IS SAVED
+userSchema.pre('save', function (next) {
+  // If the password has not been changed OR this is a new document
+  //- dont update the passwrodChangeAt proerpty!
+  if (!this.isModified('password') || this.isNew) return next();
+
+  //UPDATE THE passwordchangedAt to current time -
+  // MAKE SURE THE TOKEN IS CREATED AFTER THE passwordChangedAt was updated - to let the user login
+  //and not fial on step 4/4 in the protect method!
+  //I NEED TO HANDLE this CASE since when  DB IS SLOWER THAN ISSUINGN THE TOKEN
+  this.passwordChangedAt = Date.now() - 1000;
+  return next();
+});
+
 /**
  *NOTE - I MUAST PSAS THE userPassword - since I disabled the select:false -> this.password is not availale in the db ouput
  * @param {*} candidatePassword : password in the request body(text-plain)
@@ -95,6 +109,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
 
+  //THE ENCRYPTED TOKEN IS STORED!! not the plain text!
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
@@ -102,6 +117,7 @@ userSchema.methods.createPasswordResetToken = function () {
 
   console.log({ resetToken }, this.passwordResetToken);
 
+  ///SET 10 MINS FROM current time
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;

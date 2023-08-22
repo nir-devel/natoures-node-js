@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 // const promisify = require('util').promisify;
 const { promisify } = require('util');
 const User = require('./../models/userModel');
@@ -200,18 +201,14 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   console.log('USER FOUND BY EMAIL:');
   console.log(user);
 
-  ///////////////////////////////////
   //2.Genrerate the random token
-  //////////////////////////////////
   //This will set the reset token property() and the timeout property for 10 mins
   const resetToken = user.createPasswordResetToken();
   //I MODIFY THE DATA - BUT NOT SAVE THE DATA - I NEED TO SAVED IT
   //DEACTIVATE REQUIRED FIELDS WHEN SAVING A DOCUMENTS!- I want to save aonly the reset token
   await user.save({ validateBeforeSave: false });
 
-  ///////////////////////////////////////////
   //3)Send the token to the user's email
-  /////////////////////////////////////////
   //Recreate the the link to work in dev and in prod
   //Send the original plain-text password - and not the hashed one -
   const resetURL = `${req.protocol}://${req.get(
@@ -259,4 +256,49 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.resetPassword = (req, res, next) => {};
+//- IMPORTANT - POSTMAN: ADD THE JS SCRIPT FOR THE resetPassowrd - since it accepts a token in the URL!
+//SINCE THE END POINT FOR THIE HANDLER : resetPassword - generetes a JWT token(in this function)
+exports.resetPassword = async (req, res, next) => {
+  //1)Get the user based on the reset token
+  //QUERY THE DB BASED ON THE resetToken and if the passwordExpiration > CURRENTTIME
+  //MONGOOSE : EASY WAY TO COMPOARE A GIVEN DATA TO THE CURRENT TIME(Mongoose will
+  //convert the T.S for me in order to compoaret the values!)
+  //NOTE - ONLY CHECKED ON THE USER - NOT NEED TO CHECK THE TOKEN
+  //- BECAUSE THE USER QUIREIED BASED ON THIS ALSO
+  //400 bad request
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  console.log(`inside reset Password: resetToken from the request : `);
+  console.log(hashedToken);
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    //NOTE: MongoDB will convert the t.s of right now to the same to be compoared
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) return next(new AppError('Token is invalid or has expired', 400));
+
+  //2) Set the new password
+  //NOTE: I will send the password and the passwordConfirmed via the body
+  //DELETE THE RESET TOKEN AND THE EXPIRED TIME - FROM THE USER DOCUMENT
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  await user.save();
+
+  //3)Update the passwordChangedAt property for the user
+  //4)Log in the client - by sending him the new JWT token in the response
+  //LATER REFACTOR THIS CODE - IT REPEAT ITSELF IN 3 PLACES:singup , login , and now
+
+  const token = signToken(user._id);
+  res.status(201).json({
+    status: 'success',
+    token,
+  });
+};
