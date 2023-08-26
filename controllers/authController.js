@@ -8,7 +8,43 @@ const jwt = require('jsonwebtoken');
 const AppError = require('./../utils/appError');
 const { decode } = require('punycode');
 const sendEmail = require('../utils/email');
+const { stat } = require('fs');
 
+//EXTRACT METHOD
+//KEEP IN MIND THAT THE CODE IN THE signup() is different a bit than the other duplication
+/**
+ * 
+  * CODE OF SINGUP: 
+  * const token = signToken(newUser._id);
+    res.status(201).json({
+      status: 'success',
+      token,
+      data: {
+        user: newUser,
+      },
+  });
+
+  //CODE OF OTHERS DUPLICATIONS: 
+      const token = signToken(user._id);
+
+      res.status(200).json({
+        data: {
+          status: 'success',
+          token,
+        },
+      });
+ */
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
@@ -33,19 +69,23 @@ exports.signup = catchAsync(async (req, res, next) => {
   console.log(newUser);
   //Signin the token(in Mongoose db the id is _id)
   //ex - after the time I specify in the 3 parameters the jwt will be expired
-  const token = signToken(newUser._id);
-  //   jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-  //     expiresIn: process.env.JWT_EXPIRES_IN,
-  //   });
 
-  //Send the token to the client - that all need to be done to login a client when it is signup
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
+
+  //REFACTOR TO createSendToken!!
+  // const token = signToken(newUser._id);
+  // //   jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+  // //     expiresIn: process.env.JWT_EXPIRES_IN,
+  // //   });
+
+  // //Send the token to the client - that all need to be done to login a client when it is signup
+  // res.status(201).json({
+  //   status: 'success',
+  //   token,
+  //   data: {
+  //     user: newUser,
+  //   },
+  // });
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -78,15 +118,17 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   //3.If all good - send the toke back to the client
-  const token = signToken(user._id);
-  console.log(user);
+  createSendToken(user, 200, res);
+  //REFACTOR TO createSendToken()
+  // const token = signToken(user._id);
+  // //console.log(user);
 
-  res.status(200).json({
-    data: {
-      status: 'success',
-      token,
-    },
-  });
+  // res.status(200).json({
+  //   data: {
+  //     status: 'success',
+  //     token,
+  //   },
+  // });
 });
 
 /**
@@ -171,28 +213,9 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-// exports.forgotPassword = catchAsync(async (req, res, next) => {
-//   //1.Get user based on posted email
-//   const user = await User.findOne({ email: req.body.email });
-
-//   if (!user)
-//     return next(new AppError('There is no user with email address', 404));
-
-//   //2.Genrerate the random token
-//   const resetToken = user.createPasswordResetToken();
-//   //I MODIFY THE DATA - BUT NOT SAVE THE DATA - I NEED TO SAVED IT
-
-//   //DEACTIVATE REQUIRED FIELDS WHEN SAVING A DOCUMENTS!- I want to save aonly the reset token
-//   await user.save({ validateBeforeSave: false });
-
-//   //3Send the token to the user's email
-//   next();
-// });
-
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  /////////////////////////////
+  
   //1.Get user based on posted email
-  ///////////////////////////////////
   const user = await User.findOne({ email: req.body.email });
   //console.log(user);
   if (!user)
@@ -296,9 +319,43 @@ exports.resetPassword = async (req, res, next) => {
   //4)Log in the client - by sending him the new JWT token in the response
   //LATER REFACTOR THIS CODE - IT REPEAT ITSELF IN 3 PLACES:singup , login , and now
 
-  const token = signToken(user._id);
-  res.status(201).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
+  //EXTRACTED TO createSendToken!!!
+  // const token = signToken(user._id);
+  // res.status(201).json({
+  //   status: 'success',
+  //   token,
+  // });
 };
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  console.log('INSIDE updatePassword handler');
+  //1).Get the user from the collection based on the ID - which is in the JWT header of the current request
+  //NOTE: I CAN BE SURE THIS USER EXISTS AND AUTHENTICATED - SINCE IT PASSED THE PROTECT() METHOD
+  //NOTE: I need the user password which is set to select:false in the schem - So I need to explicilty select it
+  const user = await User.findById(req.user.id).select('+password');
+
+  console.log(`inside updatePassword handler - the user input: ${user}`);
+
+  //2)Check if Posted current password is correct - by calling the instance method checkPassword in the user model
+  //Use the instance model method - to compare the passwordCurrent(in DB) against the candiate(user input)
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is wrong', 401));
+  }
+  // if (!(await user.correctPassword(req.body.passwordCurrent), user.password)) {
+  //   return next(new AppError('Your current password is wrong!', 401));
+  // }
+
+  //3)If so, update the password
+  //IF I REACHED HERE - The user provided correct password- so I can update it's password
+  //NOTE - THE VALIDATION WILL BE EXECUTED AUTOMATICALLY - ONCE I CALL THE SAVE() method
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+
+  //DONT TURN OFF THE VALIDATION - I WANT THEM NOW  to check if the password confirm is the same as password
+  await user.save();
+
+  signToken(user.password);
+  //4)Login the user
+  createSendToken(user, 200, res);
+});

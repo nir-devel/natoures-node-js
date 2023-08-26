@@ -16,6 +16,17 @@ router.patch('/resetPassword/:token', authController.resetPassword);
 // router.post('/forget', authController.forgotPassword);
 // router.post('/resetPassword', authController.resetPassword);
 
+//meaningfull name: updateMyPassword - since this is an authenticated user
+//Protected route
+//- > THE LOGGED IN USER WILL BE SET ON THE REQUEST BY THE PROTECT METHOD: req.body.user!!!
+router.patch(
+  '/updateMyPassword',
+  authController.protect,
+  authController.updatePassword,
+);
+
+router.patch('/updateMe', authController.protect, userController.updateMe)
+
 //ADMIN END POINTS
 router.param('id', (req, res, next, val) => {
   console.log(`inside userRouter - id recieved: ${val}`);
