@@ -44,8 +44,17 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active:{
+    type:Boolean, 
+    default:true,
+    select:false
+  }
 });
 
+/****************************************************
+ *    DOCUMENT M.W FUNCTIONS
+ * *****************************************************
+ */
 //Executeh this pre hook save middleware only when the user update the password or new user is created
 userSchema.pre('save', async function (next) {
   //IF PASSWORD not changed or new user is created - then call to the next middleware - and return
@@ -78,7 +87,27 @@ userSchema.pre('save', function (next) {
   return next();
 });
 
-/**
+/****************************************************
+ *    QUERY M.W FUNCTIONS
+ * *****************************************************
+ * userSchema.pre('find'..) => MAKE THIS FUNCTION A QUERY M.W
+ *Normal funcion must !  since I want 'this' referes to the current Query objet
+ */
+
+
+//REG EXPRESSION for all queries starts with 'find'
+userSchema.pre('/^find',function(next){
+  //IMPORTANT - I want each find  query  starts with find - to return the only documents with active=true
+  //this.find({active:true})
+  this.find({active:{$ne:false}})
+
+} )
+
+/*******************************************
+ *              INSTANCE METHODS
+ * ***********************************************/ 
+
+ /* 
  *NOTE - I MUAST PSAS THE userPassword - since I disabled the select:false -> this.password is not availale in the db ouput
  * @param {*} candidatePassword : password in the request body(text-plain)
  * @param {*} userPassword: password found in the db - hashed already

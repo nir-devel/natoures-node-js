@@ -37,7 +37,7 @@ exports.updateMe = catchAsync(async (req,res,next) =>{
   //OK TESTED!:)
     return next(new AppError('This route is not for password update. Please use /updatePassword',400)); 
 
-    //2) Filter the properties I want to update
+    //2) Filter out unwanted field names that are not allowd to by updated 
      //NOTE: Dont pass the req.body!! since I dont want to update every thing in the req.body - LIKE roles!
     const fitleredBody = filterObj(req.body,'name', 'email');
     console.log('filteredBody')
@@ -73,6 +73,19 @@ exports.updateMe = catchAsync(async (req,res,next) =>{
 
 
   res.status(200).json({status:"success", updatedUser});
+
+
+})
+
+exports.deleteMe = catchAsync(async (req,res,next)=>{
+
+  //NO NEED VALIDATORS SINCE NO USER INPUT IN THIS CASE
+  const deletedUser = await User.findByIdAndUpdate(req.user.id, {active:false }); 
+  
+
+  //204 -> IN POSTMAN I WILLNOT SEE THE RESPONSE! only status code
+  res.status(204).json({status:'success'})
+
 
 
 })
