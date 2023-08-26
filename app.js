@@ -8,6 +8,22 @@ const express = require('express');
 const morgan = require('morgan');
 const app = express();
 
+const rateLimit = require('express-rate-limit');
+
+
+
+//Create a limiter from the express-rate-limit - by passing it's factory an options object
+//max 100 request per hour
+//NOTE: each appliation needs different limiter - think before it
+const limiter = rateLimit({
+  max:3, 
+  windowMs:60 * 60 * 1000, 
+  message:'Too many requests from this IP, please try again in a hour'
+})
+
+//PASS THE RETURNED  VALUE(m.w function) OF THE rateLimit function object: M.W FUNCTION to the app.use() function and specify 
+//the route I want to apply this m.w - manually on the /api - to effect all the routes starts with /api - all routes!
+app.use('/api', limiter);
 //////////////////
 //ENV VARIALBES
 // console.log(app.get('env'));
