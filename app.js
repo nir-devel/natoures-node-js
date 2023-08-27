@@ -9,21 +9,26 @@ const morgan = require('morgan');
 const app = express();
 
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+
+//HELOMET global m.w - for adding importnat secure headers!! 
+app.use(helmet());
 
 
-
+///////////////LIMIT REQUESTS FROM SAME IP//////////////////
 //Create a limiter from the express-rate-limit - by passing it's factory an options object
 //max 100 request per hour
 //NOTE: each appliation needs different limiter - think before it
+//PASS THE RETURNED  VALUE(m.w function) OF THE rateLimit function object: M.W FUNCTION to the app.use() function and specify 
+//the route I want to apply this m.w - manually on the /api - to effect all the routes starts with /api - all routes!
 const limiter = rateLimit({
   max:3, 
   windowMs:60 * 60 * 1000, 
   message:'Too many requests from this IP, please try again in a hour'
 })
-
-//PASS THE RETURNED  VALUE(m.w function) OF THE rateLimit function object: M.W FUNCTION to the app.use() function and specify 
-//the route I want to apply this m.w - manually on the /api - to effect all the routes starts with /api - all routes!
 app.use('/api', limiter);
+
+
 //////////////////
 //ENV VARIALBES
 // console.log(app.get('env'));
@@ -39,16 +44,15 @@ console.log(app.get('env'));
 
 app.use(morgan('dev'));
 
-app.use(express.json());
+//////////BODY PARSER: Reading data from the request body into req.body 
+//LIMIT AMOUT OF DATA COMMING FROM PAYLOAD
+app.use(express.json({limit:'10k'}));
 
-//static content from the f.s
+////////SERVING STATIC FILES
 app.use(express.static(`${__dirname}/public`));
 
-// app.use((req, res, next) => {
-//   //console.log('INSIDE MY MIDDLEWARE');
-//   next();
-// });
 
+/////TEST M.W  
 //Middle ware that manipulate the request - write the current time to the request and response
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString().split('T')[0];
