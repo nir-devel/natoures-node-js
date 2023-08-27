@@ -11,8 +11,11 @@ const app = express();
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
-//HELOMET global m.w - for adding importnat secure headers!! 
-app.use(helmet());
+const mongoSanitize = require('express-mongo-sanitize')
+const xss = require('xss-clean');
+
+
+
 
 
 ///////////////LIMIT REQUESTS FROM SAME IP//////////////////
@@ -22,11 +25,29 @@ app.use(helmet());
 //PASS THE RETURNED  VALUE(m.w function) OF THE rateLimit function object: M.W FUNCTION to the app.use() function and specify 
 //the route I want to apply this m.w - manually on the /api - to effect all the routes starts with /api - all routes!
 const limiter = rateLimit({
-  max:3, 
+  max:100000, 
   windowMs:60 * 60 * 1000, 
   message:'Too many requests from this IP, please try again in a hour'
 })
 app.use('/api', limiter);
+
+
+//////////BODY PARSER: Reading data from the request body into req.body 
+//LIMIT AMOUT OF DATA COMMING FROM PAYLOAD
+app.use(express.json({limit:'10mb'}));
+// app.use(express.json());
+
+
+//DATA SANITZATION AGAINST NoSQL query injection attack 
+//(The mongoSanitize() m.w - filter out all $ and dot from the request body , query string, and params )
+app.use(mongoSanitize()); 
+
+
+//DATA SANITZATION AGAINST NoSQL query injection attack 
+app.use(xss())
+
+//HELOMET global m.w - for adding importnat secure headers!! 
+app.use(helmet());
 
 
 //////////////////
@@ -44,9 +65,7 @@ console.log(app.get('env'));
 
 app.use(morgan('dev'));
 
-//////////BODY PARSER: Reading data from the request body into req.body 
-//LIMIT AMOUT OF DATA COMMING FROM PAYLOAD
-app.use(express.json({limit:'10k'}));
+
 
 ////////SERVING STATIC FILES
 app.use(express.static(`${__dirname}/public`));
