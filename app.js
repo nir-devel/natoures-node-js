@@ -14,9 +14,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize')
 const xss = require('xss-clean');
 
-
-
-
+const hpp = require('hpp'); 
 
 ///////////////LIMIT REQUESTS FROM SAME IP//////////////////
 //Create a limiter from the express-rate-limit - by passing it's factory an options object
@@ -46,6 +44,13 @@ app.use(mongoSanitize());
 //DATA SANITZATION AGAINST NoSQL query injection attack 
 app.use(xss())
 
+
+//PROTECT AGAINST PARAMTER POLUTION(like when sending 2 sort parameters to GET /tours )
+//NOTE: This m.w should be at the end - to clear up the query string !
+//White list: array for values I allow dupliaction!
+//
+app.use(hpp({whitelist:['duration', 'ratingsQuantity', 'ratingsAverage' , 
+'maxGroupSize', 'difficulty', 'price']}));
 //HELOMET global m.w - for adding importnat secure headers!! 
 app.use(helmet());
 

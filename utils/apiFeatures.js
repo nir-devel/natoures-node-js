@@ -35,6 +35,7 @@ class APIFeatures {
     // if (req.query.sort) {
     if (this.queryString.sort) {
       //console.log(req.query.sort); //OK price,duration
+      console.log(this.queryString.sort)
       const sortBy = this.queryString.sort.split(',').join(' ');
       console.log(sortBy); // //OK price duration
 
