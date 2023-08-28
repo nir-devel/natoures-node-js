@@ -28,7 +28,11 @@ mongoose
 const tours = JSON.parse(
   ///The '.' is relative to the folder on which the node appliaction starts - the home folder
   //I need to use the __dirname - which availabe anywhere(if I use it then it will be the current folder- What I want!)
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'),
+  //fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'),
+  //IMPORT THE COMPLETE DATA
+  fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'),
+
+
 );
 //IMPORT DATA INTO DB
 const importData = async function () {
