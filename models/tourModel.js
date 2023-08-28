@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -109,7 +110,9 @@ const tourSchema = new mongoose.Schema(
         description:String, 
         day:Number
       },
-    ]
+    ],
+    guides:Array
+    
   },
   //OPTIONS OBJECT
   {
@@ -126,7 +129,8 @@ tourSchema.virtual('durationWeeks').get(function () {
 });
 
 ///////////////////////////////////////////
-//DOCUMENT MIDDLEARE
+//                DOCUMENT MIDDLEARES
+//////////////////////////////////////
 
 // can be executed on the 'save' and 'create' BUT NOT ON THE insertMany, findByIDAndUpdate, etc...!!
 //
@@ -140,9 +144,29 @@ tourSchema.pre('save', function (next) {
   next();
 });
 
+//IMPORTANT: 
+//PRE SAVE M.W - EACH TIME A NEW TOUR IS SAVED - Return the 
+//The guides is the input array ! of all the user ids 
+  //loop over this array - and map each id to the corresponding user docuemnt
+
+  //NOTE - the arrow function makes an async call -wait -> must be declered with 
+  //PROBLEM WITH THE BELOW CODE: The map method will assign the result of each iteration to the guides array -> it is an array of Promises!!
+  //=> I should run each promise at the same time!parallerl - BY SIMPLY add aftert  the guides decleration - await Promise.all(guides)
+ //const guidesPromises =  this.guides.map(async id =>await User.findById(id))
+tourSchema.pre('save', async function(next){
+
+ const guidesPromises = this.guides.map(async id => await User.findById(id));
+
+ //Store the returning values of the Promises in the guides array of this tour document!
+ this.guides = await Promise.all(guidesPromises)
+
+  next();
+})
+
 ///////////////////////////////////////
 //QUERY MIDDLEWARE  - Processing Query - NOT DOCUMENT = >this referes to the current Query
 // tourSchema.pre('find', function (next) {
+/////////////////////////////////
 tourSchema.pre(/^find/, function (next) {
   //Select all tours with secretTour is false
   this.find({ secretTour: { $ne: true } });
@@ -155,8 +179,11 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-/////////////////////////
+//////////////////////
 //REGULAR EXPRESSINO - TO APPLY THE LOGIN ON ALL findXXX - prevent code cuplication!
+
+
+
 
 tourSchema.post(/^find/, function (docs, next) {
   //console.log(docs);
