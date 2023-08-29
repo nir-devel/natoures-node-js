@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const User = require('./userModel');
+//I need to import only when embed the user into the tour
+//const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -86,33 +87,40 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    startLocation:{
+    startLocation: {
       //Mongoose uses GeoJSON data format to specify GeoSpacial Data
-      type:{
-        type:String, 
-        default:'Point', 
-        enum:['Point']
-
-      }, 
-      coordinates:[Number],
-      address:String, 
-      description:String
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
     },
-    locations:[
+    locations: [
       {
-        type:{
-          type:String, 
-          default:'Point', 
-          enum:['Point']
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
         },
-        coordinates:[Number],
-        address:String, 
-        description:String, 
-        day:Number
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
       },
     ],
-    guides:Array
-    
+    //FOR THE EMBEDDED tours version - JUST DEMO
+    //guides: Array,
+
+    //REFERERNING! MAKE MORE SENSE THEN EMBEEDING
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   //OPTIONS OBJECT
   {
@@ -128,9 +136,9 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
-///////////////////////////////////////////
+////////////////////////////////////////////////////
 //                DOCUMENT MIDDLEARES
-//////////////////////////////////////
+///////////////////////////////////////////////////
 
 // can be executed on the 'save' and 'create' BUT NOT ON THE insertMany, findByIDAndUpdate, etc...!!
 //
@@ -144,24 +152,23 @@ tourSchema.pre('save', function (next) {
   next();
 });
 
-//IMPORTANT: 
-//PRE SAVE M.W - EACH TIME A NEW TOUR IS SAVED - Return the 
-//The guides is the input array ! of all the user ids 
-  //loop over this array - and map each id to the corresponding user docuemnt
+//IMPORTANT:THIS EMBEEDDING APPROACH IS JUST FOR DEMO!
+//PRE SAVE M.W - EACH TIME A NEW TOUR IS SAVED - Return the
+//The guides is the input array ! of all the user ids
+//loop over this array - and map each id to the corresponding user docuemnt
 
-  //NOTE - the arrow function makes an async call -wait -> must be declered with 
-  //PROBLEM WITH THE BELOW CODE: The map method will assign the result of each iteration to the guides array -> it is an array of Promises!!
-  //=> I should run each promise at the same time!parallerl - BY SIMPLY add aftert  the guides decleration - await Promise.all(guides)
- //const guidesPromises =  this.guides.map(async id =>await User.findById(id))
-tourSchema.pre('save', async function(next){
+//NOTE - the arrow function makes an async call -wait -> must be declered with
+//PROBLEM WITH THE BELOW CODE: The map method will assign the result of each iteration to the guides array -> it is an array of Promises!!
+//=> I should run each promise at the same time!parallerl - BY SIMPLY add aftert  the guides decleration - await Promise.all(guides)
+//const guidesPromises =  this.guides.map(async id =>await User.findById(id))
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
 
- const guidesPromises = this.guides.map(async id => await User.findById(id));
+//   //Store the returning values of the Promises in the guides array of this tour document!
+//   this.guides = await Promise.all(guidesPromises);
 
- //Store the returning values of the Promises in the guides array of this tour document!
- this.guides = await Promise.all(guidesPromises)
-
-  next();
-})
+//   next();
+// });
 
 ///////////////////////////////////////
 //QUERY MIDDLEWARE  - Processing Query - NOT DOCUMENT = >this referes to the current Query
@@ -181,9 +188,6 @@ tourSchema.pre(/^find/, function (next) {
 
 //////////////////////
 //REGULAR EXPRESSINO - TO APPLY THE LOGIN ON ALL findXXX - prevent code cuplication!
-
-
-
 
 tourSchema.post(/^find/, function (docs, next) {
   //console.log(docs);
