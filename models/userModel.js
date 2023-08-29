@@ -44,11 +44,13 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
-  active:{
-    type:Boolean, 
-    default:true,
-    select:false
-  }
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
+  //TEST
+  image: String,
 });
 
 /****************************************************
@@ -94,20 +96,18 @@ userSchema.pre('save', function (next) {
  *Normal funcion must !  since I want 'this' referes to the current Query objet
  */
 
-
 //REG EXPRESSION for all queries starts with 'find'
-userSchema.pre('/^find',function(next){
+userSchema.pre('/^find', function (next) {
   //IMPORTANT - I want each find  query  starts with find - to return the only documents with active=true
   //this.find({active:true})
-  this.find({active:{$ne:false}})
-
-} )
+  this.find({ active: { $ne: false } });
+});
 
 /*******************************************
  *              INSTANCE METHODS
- * ***********************************************/ 
+ * ***********************************************/
 
- /* 
+/*
  *NOTE - I MUAST PSAS THE userPassword - since I disabled the select:false -> this.password is not availale in the db ouput
  * @param {*} candidatePassword : password in the request body(text-plain)
  * @param {*} userPassword: password found in the db - hashed already

@@ -1,59 +1,68 @@
 //MY MODULES
 const userRouter = require('./routes/userRoutes');
 const tourRouter = require('./routes/tourRoutes');
-const AppError = require('./utils/appError');
+// const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 //3rd modules
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
 
+const cors = require('cors');
+//IMPLEMENTING CORS
+app.use(cors());
+
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 
-const mongoSanitize = require('express-mongo-sanitize')
+const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 
-const hpp = require('hpp'); 
+const hpp = require('hpp');
 
 ///////////////LIMIT REQUESTS FROM SAME IP//////////////////
 //Create a limiter from the express-rate-limit - by passing it's factory an options object
 //max 100 request per hour
 //NOTE: each appliation needs different limiter - think before it
-//PASS THE RETURNED  VALUE(m.w function) OF THE rateLimit function object: M.W FUNCTION to the app.use() function and specify 
+//PASS THE RETURNED  VALUE(m.w function) OF THE rateLimit function object: M.W FUNCTION to the app.use() function and specify
 //the route I want to apply this m.w - manually on the /api - to effect all the routes starts with /api - all routes!
 const limiter = rateLimit({
-  max:100000, 
-  windowMs:60 * 60 * 1000, 
-  message:'Too many requests from this IP, please try again in a hour'
-})
+  max: 100000,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in a hour',
+});
 app.use('/api', limiter);
 
-
-//////////BODY PARSER: Reading data from the request body into req.body 
+//////////BODY PARSER: Reading data from the request body into req.body
 //LIMIT AMOUT OF DATA COMMING FROM PAYLOAD
-app.use(express.json({limit:'10mb'}));
+app.use(express.json({ limit: '10mb' }));
 // app.use(express.json());
 
-
-//DATA SANITZATION AGAINST NoSQL query injection attack 
+//DATA SANITZATION AGAINST NoSQL query injection attack
 //(The mongoSanitize() m.w - filter out all $ and dot from the request body , query string, and params )
-app.use(mongoSanitize()); 
+app.use(mongoSanitize());
 
-
-//DATA SANITZATION AGAINST NoSQL query injection attack 
-app.use(xss())
-
+//DATA SANITZATION AGAINST NoSQL query injection attack
+app.use(xss());
 
 //PROTECT AGAINST PARAMTER POLUTION(like when sending 2 sort parameters to GET /tours )
 //NOTE: This m.w should be at the end - to clear up the query string !
 //White list: array for values I allow dupliaction!
 //
-app.use(hpp({whitelist:['duration', 'ratingsQuantity', 'ratingsAverage' , 
-'maxGroupSize', 'difficulty', 'price']}));
-//HELOMET global m.w - for adding importnat secure headers!! 
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  }),
+);
+//HELOMET global m.w - for adding importnat secure headers!!
 app.use(helmet());
-
 
 //////////////////
 //ENV VARIALBES
@@ -70,13 +79,10 @@ console.log(app.get('env'));
 
 app.use(morgan('dev'));
 
-
-
 ////////SERVING STATIC FILES
 app.use(express.static(`${__dirname}/public`));
 
-
-/////TEST M.W  
+/////TEST M.W
 //Middle ware that manipulate the request - write the current time to the request and response
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString().split('T')[0];

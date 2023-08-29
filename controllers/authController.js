@@ -37,36 +37,37 @@ const { stat } = require('fs');
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
-  const cookieOptions ={
+  const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 *60 * 1000),
-      
-      //To tell the browser to store it a cookie - and not on the locle storage - so the browser can not access the cookie value(twt)
-      HTTPOnly:true
-    }
-    
-    ///Set the secure option of the cookie only in production 
-    //secure - to send the cookie only on secure connection - HTTPS 
-    //ACTIVATE THIS OPTION ONLY IN PRODUCTION!
-    // secure:false,
-    if(process.env.NODE_ENV === 'production')
-      cookieOptions.secure = true;
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
 
-  //CREATE THE HTTPOnly cookie contain  and attack it to the response 
+    //To tell the browser to store it a cookie - and not on the locle storage - so the browser can not access the cookie value(twt)
+    HTTPOnly: true,
+  };
+
+  ///Set the secure option of the cookie only in production
+  //secure - to send the cookie only on secure connection - HTTPS
+  //ACTIVATE THIS OPTION ONLY IN PRODUCTION!
+  // secure:false,
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  //CREATE THE HTTPOnly cookie contain  and attack it to the response
   res.cookie('jwt', token, {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 *60 * 1000),
-      //secure - to send the cookie only on secure connection - HTTPS 
-      //ACTIVATE THIS OPTION ONLY IN PRODUCTION!
-      secure:true, 
-      //To tell the browser to store it a cookie - and not on the locle storage - so the browser can not access the cookie value(twt)
-      HTTPOnly:true});
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
+    //secure - to send the cookie only on secure connection - HTTPS
+    //ACTIVATE THIS OPTION ONLY IN PRODUCTION!
+    secure: true,
+    //To tell the browser to store it a cookie - and not on the locle storage - so the browser can not access the cookie value(twt)
+    HTTPOnly: true,
+  });
 
-  
-    //IMPORTANT - REMOVE THE PASSWORD FROM THE RESPONSE BEFORE SENDING IT BACK !
-    //I MUST DO THIS FOR THE CASE WHEN CREATING A USER - BECAUSE THE select:false holds for only Quering a user -not created
-      user.password = undefined; 
-    
+  //IMPORTANT - REMOVE THE PASSWORD FROM THE RESPONSE BEFORE SENDING IT BACK !
+  //I MUST DO THIS FOR THE CASE WHEN CREATING A USER - BECAUSE THE select:false holds for only Quering a user -not created
+  user.password = undefined;
+
   res.status(statusCode).json({
     status: 'success',
     token,
@@ -93,6 +94,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
     test: req.body.test,
     role: req.body.role,
+    //JUST FOR MY TESTING - NOT FROM THE COURSE!
+    image: req.body.image,
   });
 
   console.log('in sighnup method - new user created:');
@@ -244,7 +247,6 @@ exports.restrictTo = (...roles) => {
 };
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  
   //1.Get user based on posted email
   const user = await User.findOne({ email: req.body.email });
   //console.log(user);
