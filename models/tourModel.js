@@ -191,10 +191,18 @@ tourSchema.pre(/^find/, function (next) {
 
 tourSchema.post(/^find/, function (docs, next) {
   //console.log(docs);
-  console.log(Date.now() - this.start);
+  // console.log(Date.now() - this.start);
+  console.log(`Query took ${Date.now() - this.start}`);
   next();
 });
 
+//QUERY M.W - will be run each time a findXXX query is called:
+//POPULATE THE TOUR WITH THE ACTUAL GUIDES DATA - and filter out the _v and the passwordChnagedAt of the user
+tourSchema.pre(/^find/, function (next) {
+  // console.log('----INSIDE PRE M.W ^find Query');
+  this.populate({ path: 'guides', select: '-_v -passwordChangedAt' });
+  next();
+});
 ///////////////////////////////////////
 //Aggragtion Middleware - apply the filter of the secret tour on the request for statistics
 tourSchema.pre('aggregate', function (next) {

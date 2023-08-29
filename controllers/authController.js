@@ -96,6 +96,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     role: req.body.role,
     //JUST FOR MY TESTING - NOT FROM THE COURSE!
     image: req.body.image,
+    guides: req.body.guides,
   });
 
   console.log('in sighnup method - new user created:');

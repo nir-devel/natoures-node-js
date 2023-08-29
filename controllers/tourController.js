@@ -68,12 +68,27 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     .json({ status: 'success', results: tours.length, data: { tours } });
 });
 
+/*
+NOTE:(lec 153) the populate - for filling up the  guides array of the Query
+(not the guides field in the DB - which contains ids )
+const tour = await Tour.findById(req.params.id).populate('guides');
+Filter out all unnessary fields of the guides - such as __v , and passwordChnaged
+
+NOTE:findById() - Shorthand for findOne of Mongoose: 
+Tour.findOne({_id: req.param.id})
+  */
 exports.getTour = catchAsync(async (req, res, next) => {
-  /*NOTE:findById() - Shorthand for findOne of Mongoose: 
-      Tour.findOne({_id: req.param.id})
-    */
+  //EXTRACT THIS populate code   TO QUERY M.W FUNCTION IN THE TOUR MODEL()(since I want to fillup the t
+  //the tours wiwth the actual correspoinding tour guides on both findTour and findAllTours!!!
+  // const tour = await Tour.findById(req.params.id).populate({
+  //   path: 'guides',
+  //   select: '-__v -passwordChnagedAt',
+  // });
 
   const tour = await Tour.findById(req.params.id);
+
+  console.log('getTour - the tour with the actaul guides:');
+  console.log(tour);
   //console.log(`Inside getTour() - found tour: ${tour}`);
   //HANDLE TOUR NOT FOUND(WITH VALID ID) by
   //creating my AppError , pass it to next, and return immedialty
@@ -82,8 +97,8 @@ exports.getTour = catchAsync(async (req, res, next) => {
     return next(new AppError('No tour found with that ID', 404));
   }
   res.status(200).json({ status: 'success', data: { tour } });
-  err;
-  res.status(404).json({ status: 'fail', data: null });
+
+  // res.status(404).json({ status: 'fail', data: null });
 });
 //read the id from the url(NOTE: The end point in the controlRoute was
 //defined as /api/v1/tours/:id )
