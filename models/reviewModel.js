@@ -25,13 +25,13 @@ const reviewShcema = new mongoose.Schema(
 
     //Parenet Refereing(see key notes of this lecture - easy)
     tour: {
-      type: mongoose.Schema.objectId,
+      type: mongoose.Schema.ObjectId,
       ref: 'Tour',
       required: [true, 'Review must belong to a tour.'],
     },
 
     user: {
-      type: mongoose.Schema.objectId,
+      type: mongoose.Schema.ObjectId,
       ref: 'User',
       required: [true, 'Review must belong to a user.'],
     },
@@ -45,5 +45,5 @@ const reviewShcema = new mongoose.Schema(
   },
 );
 
-const Review = mongoose.model('Review', reviewSchema);
+const Review = mongoose.model('Review', reviewShcema);
 module.exports = Review;

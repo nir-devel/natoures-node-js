@@ -1,15 +1,17 @@
 //MY MODULES
 const userRouter = require('./routes/userRoutes');
 const tourRouter = require('./routes/tourRoutes');
-// const AppError = require('./utils/appError');
+const reviewRouter = require('./routes/reviewRoutes');
+//const reviewRouter = require('./routes/reviewRoutes');
+const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 //3rd modules
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
 
-const cors = require('cors');
 //IMPLEMENTING CORS
+const cors = require('cors');
 app.use(cors());
 
 const rateLimit = require('express-rate-limit');
@@ -96,10 +98,11 @@ app.use((req, res, next) => {
 const port = 3000;
 //Suppose this route handler wants to know the time the request send- and send it to the response
 
-//MOUNTING ANE ROUTER(tourRouter) ON A ROUTE(/api/v1/users)
+//MOUNTING  ROUTERS- which are M.W!! ON A ROUTE(/api/v1/users)
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
-
+app.use('/api/v1/reviews', reviewRouter);
+// app.use('/api/v1/reviews', reviewRouter);
 //IF I REACH HERE - THE REQUEST RESPONSE HAS NOT BEEN FINISHED -
 
 //STEP 1 TO HANDLE UNHANDLED ROUTES
