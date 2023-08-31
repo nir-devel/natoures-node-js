@@ -45,5 +45,20 @@ const reviewShcema = new mongoose.Schema(
   },
 );
 
+/** ----------------Query M.w --------------------
+ *
+ */
+
+//Populate the review with userdata(name and photo) and tour data(tour name)
+
+reviewShcema.pre(/^find/, function (next) {
+  this.populate({ path: 'user', select: 'name photo' }).populate({
+    path: 'tour',
+    select: 'name',
+  });
+
+  next();
+});
+
 const Review = mongoose.model('Review', reviewShcema);
 module.exports = Review;
