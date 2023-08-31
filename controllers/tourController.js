@@ -123,7 +123,12 @@ exports.getTour = catchAsync(async (req, res, next) => {
 // };
 
 exports.createTour = catchAsync(async (req, res, next) => {
+  console.log(
+    '---------inside creatTour handler: the logged in user----------',
+  );
+  console.log(req.user);
   const newTour = await Tour.create(req.body);
+
   //BUSINESS LOGIC ONLY - NOT ERROR HANDLING!
   res.status(201).json({
     status: 'success',

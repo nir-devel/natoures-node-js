@@ -8,6 +8,8 @@ const authController = require(`./../controllers/authController`);
 
 const router = express.Router();
 
+const reviewController = require('./../controllers/reviewController');
+
 //NO NEED THIS AFTER REFACTORING TO MONGODB WHICH WILL HANDLE THE ID GENERATION AND VALIDATION!
 //Param Middleware: TEST - BEFORE EXTRACTING THIS CB TO THE CONTROLLER checkID - OK
 // router.param('id', (req, res, next, val) => {
@@ -50,6 +52,19 @@ router
     authController.restrictTo('admin', 'lead-guide'),
     tourController.deleteTour,
   );
+
+//NESTING ROUTES:
+//POST /tours/tid/reviews -
+//GET /tour/tid/reviews
+//GET tour/tid/reviews/rid
+
+//NOTE:the /tours part is where I mounted the toursRouter->no need to add this part!
+router.route('/:tourId/reviews').post(
+  authController.protect,
+  authController.restrictTo('user'),
+
+  reviewController.createReview,
+);
 
 module.exports = router;
 
