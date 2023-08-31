@@ -7,8 +7,25 @@ const tourController = require(`./../controllers/tourController`);
 const authController = require(`./../controllers/authController`);
 
 const router = express.Router();
-
+const reviewRouter = require('./../routes/reviewRoutes');
 const reviewController = require('./../controllers/reviewController');
+
+//NESTING ROUTES:
+//POST /tours/tid/reviews -
+//GET /tour/tid/reviews
+//GET tour/tid/reviews/rid
+//NOTE:the /tours part is where I mounted the toursRouter->no need to add this part!
+//BAD IMPLEMENTAION - INSTEAD USE THE EXPRESS - MERGED PARAMAS - LEC 159!
+// router.route('/:tourId/reviews').post(
+//   authController.protect,
+//   authController.restrictTo('user'),
+
+//   reviewController.createReview,
+// );
+//NESTED ROUTE - IMPORTANT:(rotuer is a m.w - which I can pass a m.w - the reviewRouter )
+//to mount a router on a url
+// TO MAKE THIS TOUR ROUTER TO USE THE REVIEW TOUR WHEN EVER A REQUEST WITH URL ARRIVED '/:tourId/reviews
+router.use('/:tourId/reviews', reviewRouter);
 
 //NO NEED THIS AFTER REFACTORING TO MONGODB WHICH WILL HANDLE THE ID GENERATION AND VALIDATION!
 //Param Middleware: TEST - BEFORE EXTRACTING THIS CB TO THE CONTROLLER checkID - OK
@@ -52,19 +69,6 @@ router
     authController.restrictTo('admin', 'lead-guide'),
     tourController.deleteTour,
   );
-
-//NESTING ROUTES:
-//POST /tours/tid/reviews -
-//GET /tour/tid/reviews
-//GET tour/tid/reviews/rid
-
-//NOTE:the /tours part is where I mounted the toursRouter->no need to add this part!
-router.route('/:tourId/reviews').post(
-  authController.protect,
-  authController.restrictTo('user'),
-
-  reviewController.createReview,
-);
 
 module.exports = router;
 

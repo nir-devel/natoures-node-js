@@ -2,7 +2,11 @@ const express = require('express');
 
 const reviewController = require(`./../controllers/reviewController`);
 const authController = require('./../controllers/authController');
-const router = express.Router();
+//const router = express.Router();
+// MERGED PARAMS: ENABLE A ROUTER TO ACESS PARAMS OF ANOTHER ROUTER!
+//ALL ROUTES OF THE FORM OF: /tour/tid123/review(this one is redirected by the tourRotues)
+//s and /reviews - will be handled in the reviewController
+const router = express.Router({ mergeParams: true });
 
 router
   .route('/')
