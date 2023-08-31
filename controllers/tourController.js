@@ -85,7 +85,9 @@ exports.getTour = catchAsync(async (req, res, next) => {
   //   select: '-__v -passwordChnagedAt',
   // });
 
-  const tour = await Tour.findById(req.params.id);
+  //NOTE: reviews is a virtual reference - there is no array of revies id in CB!!
+  //I WANT TO POPULATE THE TOUR WITH IT'S USER DATA IN THE RESPONE !
+  const tour = await Tour.findById(req.params.id).populate('reviews');
 
   console.log('getTour - the tour with the actaul guides:');
   console.log(tour);

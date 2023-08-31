@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const Review = require('./reviewModel');
 //I need to import only when embed the user into the tour
 //const User = require('./userModel');
 
@@ -121,6 +122,16 @@ const tourSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    /**JUST FOR DEMO - IMPLEMENT CHILD REFERENICING
+     *  - BUT I WILL TO IMPLEMENT VIRTUAL POPULATE - WHICH MAKES IT AS IF
+     * I HAVE A REAL PHISICAL ARRAYOF ID OF THE REVIEWS CHILDS!(LIKE CHILD REFERENCING)
+     *  */
+    // reviews: [
+    //   {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: 'Review',
+    //   },
+    // ],
   },
   //OPTIONS OBJECT
   {
@@ -130,12 +141,27 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
-/////////////////////////////////////
-//VIRTUAL PROPERTIES: Will not be persisted in the DB - will be availbel
+////////////////////////////////////////////////////////////////////////////////////////
+//VIRTUAL PROPERTIES AND VIRTUAL POPULATE Will not be persisted in the DB - will be availbel
+/////////////////////////////////////////////////////////////////////////////////////
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+//VIRTUAL POPULATE
+// tourSchema.virtual('reviews', {
+//   ref: 'Review',
+//   //IMPORTANT: this is the feild in the review which refere to this tour PUT ALL IN STINGS
+//   foreignField: 'tour',
+//   localField: '_id',
+// });
+
+// Virtual populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
 ////////////////////////////////////////////////////
 //                DOCUMENT MIDDLEARES
 ///////////////////////////////////////////////////

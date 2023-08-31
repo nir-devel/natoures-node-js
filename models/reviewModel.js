@@ -50,12 +50,15 @@ const reviewShcema = new mongoose.Schema(
  */
 
 //Populate the review with userdata(name and photo) and tour data(tour name)
-
+//TURN IT OFF - SINCE I LATER I IMPLEMENT VIRTUAL PUPLATING ON THE TOUR
+//WHICH IS A BI-DIRECTIONAL - AND IT WILL RETURN HUGE AMOUT OF DATA ABOUT THE TOUR
+//WHICH DOES NOT MAKES SENSE WHEN QUERY A TOUR DATA!
 reviewShcema.pre(/^find/, function (next) {
-  this.populate({ path: 'user', select: 'name photo' }).populate({
-    path: 'tour',
-    select: 'name',
-  });
+  // this.populate({ path: 'user', select: 'name photo' }).populate({
+  //   path: 'tour',
+  //   select: 'name',
+  // });
+  this.populate({ path: 'user', select: 'name photo' });
 
   next();
 });
