@@ -1,6 +1,7 @@
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/AppError');
+const factory = require('./handlerFactory');
 
 const express = require('express');
 
@@ -121,8 +122,11 @@ exports.updateUser = (req, res) => {
     .json({ status: 'error', message: 'This route is not yet defined' });
 };
 
-exports.deleteUser = (req, res) => {
-  res
-    .status(500)
-    .json({ status: 'error', message: 'This route is not yet defined' });
-};
+//ONLY ADMIN - REALY DELETE THE USER (THE USER WHEN DELETE ITSELF - ONLY THE ACTIVE IS SET TO FALSE)
+exports.deleteUser = factory.deleteOne(User);
+//EXTRACTED TO THE factory method -  deleteOne()
+// exports.deleteUser = (req, res) => {
+//   res
+//     .status(500)
+//     .json({ status: 'error', message: 'This route is not yet defined' });
+// };

@@ -1,5 +1,6 @@
 const catchAsync = require('../utils/catchAsync');
 const Review = require('../models/reviewModel');
+const factory = require('./handlerFactory');
 
 exports.getAllReviews = catchAsync(async (req, res, next) => {
   //CHECK IF THE REQUEST HAS BEEN REDIRECTED FROM THE routerTours for the url: /:tid/reviews
@@ -10,6 +11,9 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
   let filter = {};
   if (req.params.tourId) filter = { tour: req.params.tourId };
   const reviews = await Review.find(filter);
+
+  console.log('INSIDE getAllReviews() - reviews:');
+  console.log(reviews);
 
   res
     .status(200)
@@ -30,6 +34,8 @@ exports.createReview = catchAsync(async (req, res, next) => {
   // console.log(newReview);
   res.status(201).json({ status: 'seuccess', data: { review: newReview } });
 });
+
+exports.deleteReview = factory.deleteOne(Review);
 
 /**
  * 
