@@ -2,7 +2,14 @@ const catchAsync = require('../utils/catchAsync');
 const Review = require('../models/reviewModel');
 
 exports.getAllReviews = catchAsync(async (req, res, next) => {
-  const reviews = await Review.find();
+  //CHECK IF THE REQUEST HAS BEEN REDIRECTED FROM THE routerTours for the url: /:tid/reviews
+  //BY CHECKING IF THERE IS A TID I URL
+  //(I HAVE EPXRESS MERGED PARAMS ON the reviewRoutes.js  - express.Router({ mergeParams: true });
+  // - SHOULD WORK)
+
+  let filter = {};
+  if (req.params.tourId) filter = { tour: req.params.tourId };
+  const reviews = await Review.find(filter);
 
   res
     .status(200)
@@ -10,9 +17,6 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
 });
 
 exports.createReview = catchAsync(async (req, res, next) => {
-  console.log(
-    '---------inside createReview handler: the logged in user----------',
-  );
   console.log(req.user);
   //NESTED ROUTE -
   //- LET THE USER MANUALLY SET THE tourId in the URL(in it is not already in the request body )
