@@ -81,6 +81,7 @@ userSchema.pre('save', function (next) {
   //- dont update the passwrodChangeAt proerpty!
   if (!this.isModified('password') || this.isNew) return next();
 
+  console.log('HELLO');
   //UPDATE THE passwordchangedAt to current time -
   // MAKE SURE THE TOKEN IS CREATED AFTER THE passwordChangedAt was updated - to let the user login
   //and not fial on step 4/4 in the protect method!
