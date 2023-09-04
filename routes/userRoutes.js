@@ -6,6 +6,7 @@ const router = express.Router();
 
 const authController = require('./../controllers/authController');
 
+//THE ONLY ENDPOINTS THAT ARE PUBLIC ARE IN THE FOLLOWING 4 M.W (router is a m.w)!
 //CLIENT END POINTS - AUTHENTICATION
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
@@ -14,20 +15,19 @@ router.post('/login', authController.login);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
+/////////FROM NOW ON - ALL ENDPOINTS ARE PORTECTED : CREATE A M.W TO PROTECT WHICH WILL TAKE EFFECT FOR ALL OTHER M.W
+router.use(authController.protect);
+////////////////////////////////////////////////////////////////
 // router.post('/forget', authController.forgotPassword);
 // router.post('/resetPassword', authController.resetPassword);
 
 //meaningfull name: updateMyPassword - since this is an authenticated user
 //Protected route
 //- > THE LOGGED IN USER WILL BE SET ON THE REQUEST BY THE PROTECT METHOD: req.body.user!!!
-router.patch(
-  '/updateMyPassword',
-  authController.protect,
-  authController.updatePassword,
-);
+router.patch('/updateMyPassword', authController.updatePassword);
 
-router.patch('/updateMe', authController.protect, userController.updateMe);
-router.delete('/deleteMe', authController.protect, userController.deleteMe);
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
 
 //ADMIN END POINTS
 router.param('id', (req, res, next, val) => {
@@ -42,10 +42,16 @@ router.param('id', (req, res, next, val) => {
 //SINCE THE getOne() used the id from the URL!
 router.get(
   '/me',
-  authController.protect,
+
   userController.getMe,
   userController.getUser,
 );
+
+///////////////////////////////////////
+//FROM NOW ON - ALL THE ENDPOINTS ARE RESTRICTED TO ADMIN ONLY
+////////////////////////
+router.use(authController.restrictTo('admin'));
+
 router
   .route('/')
   .get(userController.getAllUsers)

@@ -8,6 +8,11 @@ const authController = require('./../controllers/authController');
 //s and /reviews - will be handled in the reviewController
 const router = express.Router({ mergeParams: true });
 
+/////////////////
+//ALL END POINTS OF REVIEWS - ARE PROTECTED!!!!BY TH protect m.w
+/////////
+router.use(authController.protect);
+
 router
   .route('/')
   .get(reviewController.getAllReviews)
@@ -25,7 +30,11 @@ router
   .route('/:id')
   .get(reviewController.getReview)
   .delete(reviewController.deleteReview)
-  .patch(reviewController.updateReview);
+  //Restrict update review to  only admin and user - WHY USER?
+  .patch(
+    authController.restrictTo('user', 'admin'),
+    reviewController.updateReview,
+  );
 
 module.exports = router;
 // const router = express.Router();

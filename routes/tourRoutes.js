@@ -48,19 +48,37 @@ router
 router.route('/tour-stats').get(tourController.getTourStats);
 
 //Route will return -  find the busiest month of a given year:
-router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+//RESTRICT TO ALL EXCEPT NORMAL USERS
+router
+  .route('/monthly-plan/:year')
+  .get(
+    authController.protect,
+    authController.restrictTo('lead-guide', 'admin', 'guide'),
+    tourController.getMonthlyPlan,
+  );
 
 router
   .route('/')
-  //PLUGIN THE PROTECT MIDDLEWARE TO PROTECT THIS ROUTE
-  .get(authController.protect, tourController.getAllTours)
-  // .post(tourController.checkBody, tourController.createTour);
-  .post(tourController.createTour);
+  //THIS ROUTE IS NOT PROTECTED - IT SHUOLD BE EXPOSED TO ANYONE!!
+  // .get(authController.protect, tourController.getAllTours)
+  .get(tourController.getAllTours)
+  //ENABLE ONLY  AUTHENTICATD ADMIN AND LEAD GUIDE TO ADD TOURS
+  .post(
+    authController.protect,
+    authController.restrictTo('lead-guide', 'admin'),
+    tourController.createTour,
+  );
 
 router
   .route('/:id')
   .get(tourController.getTour)
-  .patch(tourController.updateTour)
+  .patch(
+    //Login users m.w
+    authController.protect,
+    //autorization m.w: authorize only admin and lead-guid roles to delete tours
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.updateTour,
+  )
   //ADD AUTORIZATION ON DELETE - TO ALLOWS ONLY admin , tour-guide roles
   .delete(
     //Login users m.w
