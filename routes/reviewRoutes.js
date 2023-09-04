@@ -15,10 +15,17 @@ router
   .post(
     authController.protect, //AUTHENTICATED
     authController.restrictTo('user'), //AUTHORIZATION : ONLY REGULAR USERS CAN POST
+    reviewController.setTourUserIds, //IMPORTANT - THIS M.W I CREATED BY DECOUPLING THE request body checking if the user/tour are contained
     reviewController.createReview,
   );
 
-router.route('/:id').delete(reviewController.deleteReview);
+//IS THE ORDER MATTER - he did opposite
+//WHAT ABOUT PREMISSIONS ? AUTHENTICAIONS? - LATER - FOR NOW JUST TEST!
+router
+  .route('/:id')
+  .delete(reviewController.deleteReview)
+  .patch(reviewController.updateReview);
+
 module.exports = router;
 // const router = express.Router();
 // router.route('/').post(reviewController.createReview);

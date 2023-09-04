@@ -124,49 +124,59 @@ exports.getTour = catchAsync(async (req, res, next) => {
 //   return (req, res, next) => fn(req, res, next).catch(next);
 // };
 
-exports.createTour = catchAsync(async (req, res, next) => {
-  console.log(
-    '---------inside creatTour handler: the logged in user----------',
-  );
-  console.log(req.user);
-  const newTour = await Tour.create(req.body);
+// exportscreateTour = factory.createOne(Tour);
+//EXTRACTED TO THE FACTORY createOne
 
-  //BUSINESS LOGIC ONLY - NOT ERROR HANDLING!
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour,
-    },
-  });
-});
+// exports.createTour = catchAsync(async (req, res, next) => {
+//   console.log(
+//     '---------inside creatTour handler: the logged in user----------',
+//   );
+//   console.log(req.user);
+//   const newTour = await Tour.create(req.body);
 
-//HOW TO HANDLE THE CASE WHEN THE ID NOT FOUND???
-exports.updateTour = catchAsync(async (req, res, next) => {
-  //Read the id from url , find the tour , update the tour
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    //Returns the updated document
-    new: true,
-    //The Mongoose API will handle it !Not me in the catch!
-    runValidators: true,
-  });
+//   //BUSINESS LOGIC ONLY - NOT ERROR HANDLING!
+//   res.status(201).json({
+//     status: 'success',
+//     data: {
+//       tour: newTour,
+//     },
+//   });
+// });
 
-  if (!tour) {
-    return next(new AppError('No tour found with that ID', 404));
-  }
+exports.createTour = factory.createOne(Tour);
+//IMPORTANT - the updateTour
+//DO NOT UPDATE PASSWORD WITH THIS(WILL NOT WORK - SINCE PRE SAVE M.W
+// - WILL NOT RUN since they call the findByIdAndUpdate())
+exports.updateTour = factory.updateOne(Tour);
+exports.deleteTour = factory.deleteOne(Tour);
 
-  //set the response body with the updated tour
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
+// //HOW TO HANDLE THE CASE WHEN THE ID NOT FOUND???
+// exports.updateTour = catchAsync(async (req, res, next) => {
+//   //Read the id from url , find the tour , update the tour
+//   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//     //Returns the updated document
+//     new: true,
+//     //The Mongoose API will handle it !Not me in the catch!
+//     runValidators: true,
+//   });
 
-  //res.status(404).json({ status: 'fail', message: err.message });
-});
+//   if (!tour) {
+//     return next(new AppError('No tour found with that ID', 404));
+//   }
+
+//   //set the response body with the updated tour
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       tour,
+//     },
+//   });
+
+//   //res.status(404).json({ status: 'fail', message: err.message });
+// });
 
 //AFTER REFACTORING - DELETE - TO FACTORY
-exports.deleteTour = factory.deleteOne(Tour);
+
 //HOT TO HANDLE NOT FOUND?????????
 //REFACTORED TO handlerFactory genereic
 // exports.deleteTour = catchAsync(async (req, res, next) => {

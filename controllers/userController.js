@@ -1,6 +1,7 @@
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/AppError');
+//CHECK!LINT MARK IT SO I COMMENT OUT!! IN CASE SOMETHING WRONG - BRING IT BACK!
+// const AppError = require('./../utils/AppError');
 const factory = require('./handlerFactory');
 
 const express = require('express');
@@ -8,7 +9,6 @@ const express = require('express');
 //UTIL FUNCTION TO FILTER ONLY PROPERTIES I WANT TO UDPATED (ignore proeprties the client sent like roles etc.)
 const filterObj = (obj, ...allowedFields) => {
   const filteredObj = {};
-
   Object.keys(obj).forEach((el) => {
     if (allowedFields.includes(el)) filteredObj[el] = obj[el];
   });
@@ -65,6 +65,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   //2)Update the User docuemnet
   //Filter the body to updte only required fields: for now only email and name - without letting the user sends any data to be updated!
 
+  //REFACTOREED TO updateOne factory
   const updatedUser = await User.findByIdAndUpdate(req.user.id, fitleredBody, {
     new: true,
     runValidators: true,
@@ -86,6 +87,9 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   res.status(204).json({ status: 'success' });
 });
 
+/////////////////////////////////////////////////////////////////////////////////////
+//ADMING HANDLERS ONLY
+//////////////////////////////////////////////////////////////////
 //FOR NOW - SINCE I TEST MY OWN!
 // exports.getUser = (req, res) => {
 //   res
@@ -116,11 +120,15 @@ exports.createUser = (req, res) => {
     .json({ status: 'error', message: 'This route is not yet defined' });
 };
 
-exports.updateUser = (req, res) => {
-  res
-    .status(500)
-    .json({ status: 'error', message: 'This route is not yet defined' });
-};
+//IMOPRTANT - DO NOT UPDATE PASSWORDS WITH THIS!!
+exports.updateUser = factory.updateOne(User);
+
+//REFACTORED TO updateOne factory
+// exports.updateUser = (req, res) => {
+//   res
+//     .status(500)
+//     .json({ status: 'error', message: 'This route is not yet defined' });
+// };
 
 //ONLY ADMIN - REALY DELETE THE USER (THE USER WHEN DELETE ITSELF - ONLY THE ACTIVE IS SET TO FALSE)
 exports.deleteUser = factory.deleteOne(User);
