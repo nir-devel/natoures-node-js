@@ -35,6 +35,17 @@ router.param('id', (req, res, next, val) => {
   next();
 });
 
+//NOTE - getMe() handler-   required to be logged in and having the user id in the request params
+//SO CALL THE M.W - - TO SET THE ID IN THE req.params.id - so I will be able to call the getOne factory() after !
+//NOTE : the authController.protect will hadd the user to the current request
+//ACTUALLY - FACKING THAT THE ID CAME FROM THE URL AND NOT FROM THE req.user.id!
+//SINCE THE getOne() used the id from the URL!
+router.get(
+  '/me',
+  authController.protect,
+  userController.getMe,
+  userController.getUser,
+);
 router
   .route('/')
   .get(userController.getAllUsers)

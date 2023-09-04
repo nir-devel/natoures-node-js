@@ -78,6 +78,14 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   res.status(200).json({ status: 'success', updatedUser });
 });
 
+/////////////////////////////////////////////
+//ME ENDPOINTS
+
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 exports.deleteMe = catchAsync(async (req, res, next) => {
   //NO NEED VALIDATORS SINCE NO USER INPUT IN THIS CASE
   const deletedUser = await User.findByIdAndUpdate(req.user.id, {
