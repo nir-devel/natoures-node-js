@@ -84,6 +84,7 @@ exports.getAll = (Model) =>
     let filter = {};
     if (req.params.tourId) filter = { tour: req.params.tourId };
     // const requestedAt = Date.now().toString();
+
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
@@ -91,6 +92,8 @@ exports.getAll = (Model) =>
       .paginate();
     //The features.query has the find method on it
     //EXECUTING THE QUERY
+    //NOTE - THE EXPLAINED() METHOD - TO GET STATISTCS WITH THE RESPONSE!
+    // const doc = await features.query.explain();
     const doc = await features.query;
     // const tours = await query;
     //MongoDB  filter object in the query with gte : {difficulty:'easy', duration:{$gte:4}}

@@ -141,6 +141,14 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
+//////////////
+//INDEX
+/////////////////
+//SINGLE FIELD INDEX
+// tourSchema.index({ price: 1 });
+//COUMPUND FIELD INDEX(1 ascending , -1 descinging)
+tourSchema.index({ price: 1, ratingAverage: -1 });
+tourSchema.index({ slug: 1 });
 ////////////////////////////////////////////////////////////////////////////////////////
 //VIRTUAL PROPERTIES AND VIRTUAL POPULATE Will not be persisted in the DB - will be availbel
 /////////////////////////////////////////////////////////////////////////////////////
