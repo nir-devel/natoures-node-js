@@ -16,17 +16,18 @@ const filterObj = (obj, ...allowedFields) => {
   return filteredObj;
 };
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
+exports.getAllUsers = factory.getAll(User);
+// exports.getAllUsers = catchAsync(async (req, res, next) => {
+//   const users = await User.find();
 
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    data: {
-      users,
-    },
-  });
-});
+//   res.status(200).json({
+//     status: 'success',
+//     results: users.length,
+//     data: {
+//       users,
+//     },
+//   });
+// });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   //1) Create error if user tries to update password data
@@ -88,7 +89,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 });
 
 /////////////////////////////////////////////////////////////////////////////////////
-//ADMING HANDLERS ONLY
+//ADMIN HANDLERS ONLY
 //////////////////////////////////////////////////////////////////
 //FOR NOW - SINCE I TEST MY OWN!
 // exports.getUser = (req, res) => {
@@ -96,28 +97,31 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 //     .status(500)
 //     .json({ status: 'error', message: 'This route is not yet defined' });
 // };
-exports.getUser = catchAsync(async (req, res, next) => {
-  /*NOTE:findById() - Shorthand for findOne of Mongoose: 
-      Tour.findOne({_id: req.param.id})
-    */
 
-  const user = await User.findById(req.params.id);
-  //console.log(`Inside getTour() - found tour: ${tour}`);
-  //HANDLE TOUR NOT FOUND(WITH VALID ID) by
-  //creating my AppError , pass it to next, and return immedialty
-  //THIS ERROR WILL BE MARKED AS OPERATOINAL BY THE AppError constructor!
-  if (!user) {
-    return next(new AppError('No user found with that ID', 404));
-  }
-  res.status(200).json({ status: 'success', data: { user } });
-  err;
-  res.status(404).json({ status: 'fail', data: null });
-});
+exports.getUser = factory.getOne(User);
+// exports.getUser = catchAsync(async (req, res, next) => {
+//   /*NOTE:findById() - Shorthand for findOne of Mongoose:
+//       Tour.findOne({_id: req.param.id})
+//     */
+
+//   const user = await User.findById(req.params.id);
+//   //console.log(`Inside getTour() - found tour: ${tour}`);
+//   //HANDLE TOUR NOT FOUND(WITH VALID ID) by
+//   //creating my AppError , pass it to next, and return immedialty
+//   //THIS ERROR WILL BE MARKED AS OPERATOINAL BY THE AppError constructor!
+//   if (!user) {
+//     return next(new AppError('No user found with that ID', 404));
+//   }
+//   res.status(200).json({ status: 'success', data: { user } });
+//   err;
+//   res.status(404).json({ status: 'fail', data: null });
+// });
 
 exports.createUser = (req, res) => {
-  res
-    .status(500)
-    .json({ status: 'error', message: 'This route is not yet defined' });
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined! And please use signup instead!',
+  });
 };
 
 //IMOPRTANT - DO NOT UPDATE PASSWORDS WITH THIS!!

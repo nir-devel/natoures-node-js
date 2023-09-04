@@ -52,23 +52,28 @@ exports.aliasTopTours = (req, res, next) => {
 
 //ROUTES
 
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  // const requestedAt = Date.now().toString();
-  const features = new APIFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
-  //The features.query has the find method on it
-  //EXECUTING THE QUERY
-  const tours = await features.query;
-  // const tours = await query;
-  //MongoDB  filter object in the query with gte : {difficulty:'easy', duration:{$gte:4}}
-  //SNED RESOPNSE
-  res
-    .status(200)
-    .json({ status: 'success', results: tours.length, data: { tours } });
-});
+// exports.getAllTours = catchAsync(async (req, res, next) => {
+//   // const requestedAt = Date.now().toString();
+//   const features = new APIFeatures(Tour.find(), req.query)
+//     .filter()
+//     .sort()
+//     .limitFields()
+//     .paginate();
+//   //The features.query has the find method on it
+//   //EXECUTING THE QUERY
+//   const tours = await features.query;
+//   // const tours = await query;
+//   //MongoDB  filter object in the query with gte : {difficulty:'easy', duration:{$gte:4}}
+//   //SNED RESOPNSE
+//   res
+//     .status(200)
+//     .json({ status: 'success', results: tours.length, data: { tours } });
+// });
+
+exports.getAllTours = factory.getAll(Tour);
+
+//IMPORTANT - PASS THE popOptions object to the factory - to populate the tour with it's reviews childs
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 
 /*
 NOTE:(lec 153) the populate - for filling up the  guides array of the Query
@@ -79,31 +84,32 @@ Filter out all unnessary fields of the guides - such as __v , and passwordChnage
 NOTE:findById() - Shorthand for findOne of Mongoose: 
 Tour.findOne({_id: req.param.id})
   */
-exports.getTour = catchAsync(async (req, res, next) => {
-  //EXTRACT THIS populate code   TO QUERY M.W FUNCTION IN THE TOUR MODEL()(since I want to fillup the t
-  //the tours wiwth the actual correspoinding tour guides on both findTour and findAllTours!!!
-  // const tour = await Tour.findById(req.params.id).populate({
-  //   path: 'guides',
-  //   select: '-__v -passwordChnagedAt',
-  // });
 
-  //NOTE: reviews is a virtual reference - there is no array of revies id in CB!!
-  //I WANT TO POPULATE THE TOUR WITH IT'S USER DATA IN THE RESPONE !
-  const tour = await Tour.findById(req.params.id).populate('reviews');
+// exports.getTour = catchAsync(async (req, res, next) => {
+//   //EXTRACT THIS populate code   TO QUERY M.W FUNCTION IN THE TOUR MODEL()(since I want to fillup the t
+//   //the tours wiwth the actual correspoinding tour guides on both findTour and findAllTours!!!
+//   // const tour = await Tour.findById(req.params.id).populate({
+//   //   path: 'guides',
+//   //   select: '-__v -passwordChnagedAt',
+//   // });
 
-  console.log('getTour - the tour with the actaul guides:');
-  console.log(tour);
-  //console.log(`Inside getTour() - found tour: ${tour}`);
-  //HANDLE TOUR NOT FOUND(WITH VALID ID) by
-  //creating my AppError , pass it to next, and return immedialty
-  //THIS ERROR WILL BE MARKED AS OPERATOINAL BY THE AppError constructor!
-  if (!tour) {
-    return next(new AppError('No tour found with that ID', 404));
-  }
-  res.status(200).json({ status: 'success', data: { tour } });
+//   //NOTE: reviews is a virtual reference - there is no array of revies id in CB!!
+//   //I WANT TO POPULATE THE TOUR WITH IT'S USER DATA IN THE RESPONE !
+//   const tour = await Tour.findById(req.params.id).populate('reviews');
 
-  // res.status(404).json({ status: 'fail', data: null });
-});
+//   console.log('getTour - the tour with the actaul guides:');
+//   console.log(tour);
+//   //console.log(`Inside getTour() - found tour: ${tour}`);
+//   //HANDLE TOUR NOT FOUND(WITH VALID ID) by
+//   //creating my AppError , pass it to next, and return immedialty
+//   //THIS ERROR WILL BE MARKED AS OPERATOINAL BY THE AppError constructor!
+//   if (!tour) {
+//     return next(new AppError('No tour found with that ID', 404));
+//   }
+//   res.status(200).json({ status: 'success', data: { tour } });
+
+//   // res.status(404).json({ status: 'fail', data: null });
+// });
 //read the id from the url(NOTE: The end point in the controlRoute was
 //defined as /api/v1/tours/:id )
 //EXTRACTED

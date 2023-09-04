@@ -1,24 +1,25 @@
-const catchAsync = require('../utils/catchAsync');
+// const catchAsync = require('../utils/catchAsync');
 const Review = require('../models/reviewModel');
 const factory = require('./handlerFactory');
 
-exports.getAllReviews = catchAsync(async (req, res, next) => {
-  //CHECK IF THE REQUEST HAS BEEN REDIRECTED FROM THE routerTours for the url: /:tid/reviews
-  //BY CHECKING IF THERE IS A TID I URL
-  //(I HAVE EPXRESS MERGED PARAMS ON the reviewRoutes.js  - express.Router({ mergeParams: true });
-  // - SHOULD WORK)
+exports.getAllReviews = factory.getAll(Review);
+// exports.getAllReviews = catchAsync(async (req, res, next) => {
+//   //CHECK IF THE REQUEST HAS BEEN REDIRECTED FROM THE routerTours for the url: /:tid/reviews
+//   //BY CHECKING IF THERE IS A TID I URL
+//   //(I HAVE EPXRESS MERGED PARAMS ON the reviewRoutes.js  - express.Router({ mergeParams: true });
+//   // - SHOULD WORK)
 
-  let filter = {};
-  if (req.params.tourId) filter = { tour: req.params.tourId };
-  const reviews = await Review.find(filter);
+//   let filter = {};
+//   if (req.params.tourId) filter = { tour: req.params.tourId };
+//   const reviews = await Review.find(filter);
 
-  console.log('INSIDE getAllReviews() - reviews:');
-  console.log(reviews);
+//   console.log('INSIDE getAllReviews() - reviews:');
+//   console.log(reviews);
 
-  res
-    .status(200)
-    .json({ status: 'sucess', results: reviews.length, data: reviews });
-});
+//   res
+//     .status(200)
+//     .json({ status: 'sucess', results: reviews.length, data: reviews });
+// });
 
 //SUPER IMPORTANT!!!!!!DECOUPING THE SETTING USER AND TOUR FROM THE REVIEW CREATION - SO I WILL BE ABLE TO REFACTOR THE CREATE REVEIW
 //DECOUPLE THE CODE THAT CHECKS IF THE REQUEST CONTAINS THE user and tour  FROM THE Review createReview() handler
@@ -31,7 +32,8 @@ exports.setTourUserIds = (req, res, next) => {
   next();
 };
 
-//AFTER DECOUING THE set tour and user id to the setTouruSERiDS M.W -
+exports.getReview = factory.getOne(Review);
+//IMPORTANT - THE createReview : AFTER DECOUPLING  THE set tour and user id to the setTouruSERiDS M.W -
 // I can easily extract the creation code of the review to the factory
 exports.createReview = factory.createOne(Review);
 exports.updateReview = factory.updateOne(Review);

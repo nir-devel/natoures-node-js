@@ -23,6 +23,7 @@ router
 //WHAT ABOUT PREMISSIONS ? AUTHENTICAIONS? - LATER - FOR NOW JUST TEST!
 router
   .route('/:id')
+  .get(reviewController.getReview)
   .delete(reviewController.deleteReview)
   .patch(reviewController.updateReview);
 
