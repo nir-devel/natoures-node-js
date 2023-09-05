@@ -57,6 +57,11 @@ const userSchema = new mongoose.Schema({
  *    DOCUMENT M.W FUNCTIONS
  * *****************************************************
  */
+
+//////////////////
+//IMPORTANT - TO UPLOAD THE USERS FROM JSON - TURN THIS 2 ENCRYPT M.W BEFORE AND AFTER IMPORT BRING THEM BACK
+//SINCE THE USERS IN THE JSON ARE ENCRYPTED ALREADY!
+//////////////////////////////
 //Executeh this pre hook save middleware only when the user update the password or new user is created
 userSchema.pre('save', async function (next) {
   //IF PASSWORD not changed or new user is created - then call to the next middleware - and return

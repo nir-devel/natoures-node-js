@@ -33,6 +33,8 @@ const importData = async () => {
     await Tour.create(tours);
     //SKIP ALL VALIDATION IN THE USER MODEL - OTHERWISE I WILL GET THE MISSING confirmPassword
     await User.create(users, { validateBeforeSave: false });
+    //TURN OF VALIDATION - SINCE I will get the User Validation Failed -since no conrimPassword in the JSON fil
+    //await User.create(users);
     await Review.create(reviews);
     console.log('Data successfully loaded!');
   } catch (err) {

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Tour = require('./tourModel');
 //SHCEMA FIELDS
 // rating:Number
 // createdAt:Date
@@ -53,6 +53,8 @@ const reviewShcema = new mongoose.Schema(
 //TURN IT OFF - SINCE I LATER I IMPLEMENT VIRTUAL PUPLATING ON THE TOUR
 //WHICH IS A BI-DIRECTIONAL - AND IT WILL RETURN HUGE AMOUT OF DATA ABOUT THE TOUR
 //WHICH DOES NOT MAKES SENSE WHEN QUERY A TOUR DATA!
+
+// reviewShcema.pre(/^find/, function (next) {
 reviewShcema.pre(/^find/, function (next) {
   // this.populate({ path: 'user', select: 'name photo' }).populate({
   //   path: 'tour',
@@ -62,6 +64,47 @@ reviewShcema.pre(/^find/, function (next) {
 
   next();
 });
+
+/////////////////////////////////////////////////////////
+//STATIC FUNCTION (TRIGGER)
+////////////////////////////////////
+
+reviewShcema.statics.calcAverageRatings = async function (tourId) {
+  //AGGRAGATE RETURNS A PROMISE
+  const stats = await this.aggregate([
+    //STAGE 1:MATHCH STAGE -  FIND THE TOUR WITH THIS ID
+    {
+      $match: { tour: tourId },
+    },
+    //STAGE 2:GROUP STAGE: CALCUALTE THE STATISTICS(first value is the common field I want to group all docs)
+    {
+      $group: {
+        _id: '$tour',
+        //ADD 1 TO EACH TOUR THAT WAS MATCHED IN THE MATCH STAGE
+        nRating: { $sum: 1 },
+
+        avgRating: { $avg: '$rating' },
+      },
+    },
+  ]);
+  console.log(stats);
+
+  //UPDATE THE TOUR DOCUMENT WITH THE STATISTCS
+  //NOTE: the stats are stored in an array of one object : I need to access the nRating and the avgRatings properties
+  await Tour.findByIdAndUpdate(tourId, {
+    ratingsQuantity: stats[0].nRating,
+    ratingsAverage: stats[0].avgRating,
+  });
+};
+
+reviewShcema.post('save', function () {
+  //this points to current review DOCUMENT- BUT I NEED
+
+  this.constructor.calcAverageRatings(this.tour);
+  // next();
+});
+
+//M.W HOOK
 
 const Review = mongoose.model('Review', reviewShcema);
 module.exports = Review;

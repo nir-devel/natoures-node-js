@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const Review = require('./reviewModel');
+// const Review = require('./reviewModel');
 //I need to import only when embed the user into the tour
 //const User = require('./userModel');
 
