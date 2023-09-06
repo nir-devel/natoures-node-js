@@ -91,10 +91,18 @@ reviewShcema.statics.calcAverageRatings = async function (tourId) {
 
   //UPDATE THE TOUR DOCUMENT WITH THE STATISTCS
   //NOTE: the stats are stored in an array of one object : I need to access the nRating and the avgRatings properties
-  await Tour.findByIdAndUpdate(tourId, {
-    ratingsQuantity: stats[0].nRating,
-    ratingsAverage: stats[0].avgRating,
-  });
+  //THIS CODE SHOULD BE EXECUTED ONLY IF THERE ARE REVIEWS - Otherwise the stats array is empty - and I will get an error for accesign it
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: stats[0].nRating,
+      ratingsAverage: stats[0].avgRating,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0,
+      ratingsAverage: 4.5,
+    });
+  }
 };
 
 reviewShcema.post('save', function () {
@@ -105,6 +113,29 @@ reviewShcema.post('save', function () {
 });
 
 //M.W HOOK
+/**EXPLANATION:review :
+       findByIdAndUpdate - is only a SHORTHAND FOR findOneAndUdate - with the current Id!
+       The goal is to get access to the current document 
+       But the this keyword in this hook - again - refers to the Query object!
 
+       To go around this - EXECUTE THE QUERY - WHICH WILL GIVE ME THE DOCUMENT(the id) 
+       That's currently being processd! - which is what I need to update the ratingAverage of the tour
+ */
+reviewShcema.pre(/^findOneAnd/, async function (next) {
+  //GET ACCESS TO THE DOCUMENT BY EXECUTING THE QUERY AND RETURN THE DOCUMNT FROM DB
+  //AND STORE IT ON THE CURRENT DOCUMENT
+  this.r = await this.findOne();
+
+  console.log(this.r);
+  next();
+});
+
+//ONLY HERE I SHOULD CALCULATE THE AVG RAGING
+//await this.findOne(); => DOES NOT WORK HERE , QUERY HAS ALREADY EXECUTED!!! THERE IS NO QUERY
+reviewShcema.post(/^findOneAnd/, async function () {
+  //GET THE TOUR OF THE RETURNED REVIEW FROM LAST PRE M.W WHICH IS STORED ON this.r.tour!
+  //AND CALCUALTE THE ratingAverage ONLY AFTER IT WAS STORED(this is the right place - POST m.w!)
+  await this.r.constructor.calcAverageRatings(this.r.tour);
+});
 const Review = mongoose.model('Review', reviewShcema);
 module.exports = Review;
