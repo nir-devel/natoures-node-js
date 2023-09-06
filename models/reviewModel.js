@@ -45,7 +45,14 @@ const reviewShcema = new mongoose.Schema(
   },
 );
 
-/** ----------------Query M.w --------------------
+/*****************
+ * INDEXES
+ ************************/
+//MAKE EACH COMBINATION OF TOUR AND USER - QUNIQUE(TO PREVENT A USER TO REVIEW THE SAME TOUR MORE THAN ONCE!)
+reviewShcema.index({ tour: 1, user: 1 }, { unique: true });
+
+/**
+ * ----------------Query M.w --------------------
  *
  */
 
