@@ -1,4 +1,5 @@
 //MY MODULES
+const path = require('path');
 const userRouter = require('./routes/userRoutes');
 const tourRouter = require('./routes/tourRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
@@ -9,6 +10,13 @@ const globalErrorHandler = require('./controllers/errorController');
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
+
+//Pug Template Setup to be used in Express - AND STATIC FILES
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+////////SERVING STATIC FILES
+// app.use(express.static(`${__dirname}/public`));
+app.use(express.static(path.join(__dirname, 'public')));
 
 //IMPLEMENTING CORS
 const cors = require('cors');
@@ -81,9 +89,6 @@ console.log(app.get('env'));
 
 app.use(morgan('dev'));
 
-////////SERVING STATIC FILES
-app.use(express.static(`${__dirname}/public`));
-
 /////TEST M.W
 //Middle ware that manipulate the request - write the current time to the request and response
 app.use((req, res, next) => {
@@ -95,9 +100,15 @@ app.use((req, res, next) => {
 /////////////////////////////////////////////////
 //ROUTE HANDLERS
 /////////////////////////////////
-const port = 3000;
+//const port = 3000;
 //Suppose this route handler wants to know the time the request send- and send it to the response
 
+//Get the root of the website
+app.get('/', (req, res) => {
+  //INSTEAD OF JSON - USE RENDER() - to render the template with the name I passed
+  //CREATE 'LCOALS' TO THE PUG TEMPLATE
+  res.status(200).render('base', { tour: 'The Forest Hicker', user: 'Nir' });
+});
 //MOUNTING  ROUTERS- which are M.W!! ON A ROUTE(/api/v1/users)
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
