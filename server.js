@@ -21,19 +21,22 @@ console.log(
 connect to the mongodb using mongoose: 
   But first - replace the password section in the connection string  - using the process.env 
 */
-// Get the connection string and replace thePASSWORD> with the real one in the DATABASE_PASSWORD e.v
+// Get the connection string and replace the <PASSWORD>
+//with the real one in the DATABASE_PASSWORD e.v
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',
   process.env.DATABASE_PASSWORD,
 );
 
 // CONNECT TO THE HOSTED DB: RETUREN A PORIMSE! I need to handle it - OK !!
-
+//options for dealing with deprectation warnining
 mongoose
+  // .connect(process.env.DATABASE_LOCAL, {
   .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
+    //HE DOES NOT HAS THIS foutrh one
     useUnifiedTopology: true,
   })
   // HANDLETHE PROIMSE - RESOLVED VALUE IS THE NEW CONNECTION

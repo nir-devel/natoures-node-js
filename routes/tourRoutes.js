@@ -57,6 +57,19 @@ router
     tourController.getMonthlyPlan,
   );
 
+/**
+ * IMPORTANT:
+ *  I COULD IMPLEMENT THIS ROUTE WITH QUERY STRINGS - BUT IT IS MUCH MORE CLEAN IT IS DEFINED HERE :
+ * With Query Strings - the user will send the requet URL:
+ *  /tours-within?distance=233&cnter=-40,45&unit=mi
+ *
+ * IN THE CURRENT IMPLEMENTAITON - THE USER WILL PASS:
+ *  /tours-within/233/center/-40,45/unit/mi
+ */
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourController.getToursWithin);
+
 router
   .route('/')
   //THIS ROUTE IS NOT PROTECTED - IT SHUOLD BE EXPOSED TO ANYONE!!

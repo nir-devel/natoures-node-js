@@ -151,6 +151,9 @@ const tourSchema = new mongoose.Schema(
 //COUMPUND FIELD INDEX(1 ascending , -1 descinging)
 tourSchema.index({ price: 1, ratingAverage: -1 });
 tourSchema.index({ slug: 1 });
+
+//IMPORTANT : TELL MONGODB THAT THS STARLOCAION SHOULD BE INDEXED TO A 2D SPHERE!
+tourSchema.index({ startLocation: '2dsphere' });
 ////////////////////////////////////////////////////////////////////////////////////////
 //VIRTUAL PROPERTIES AND VIRTUAL POPULATE Will not be persisted in the DB - will be availbel
 /////////////////////////////////////////////////////////////////////////////////////

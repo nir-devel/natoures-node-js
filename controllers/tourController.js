@@ -3,6 +3,7 @@
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const APIFeatures = require('./../utils/apiFeatures');
+//IT IS NEEDED HERE OLNY FOR THE GEOSPATICAL REQUESTS - ALL OTHER METHODS MOVED TO THE FACTORY !
 const AppError = require('../utils/appError');
 
 const factory = require('./handlerFactory');
@@ -299,6 +300,42 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
       message: err,
     });
   }
+});
+
+//LOS ANGELERS FROM GOOGLE MAP:34.127329, -118.199117
+//tours-within/:distance/center/:latlng/unit/:unit
+//tours-within/233/center/-40,45/unit/mi
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  //destruct the request.params object to get all the properties at once
+  const { distance, latlng, unit } = req.params;
+
+  //Create an array of [lag,lng] from the latlng variable
+  // - and destructt the array - to get the lat , lng at once
+  const [lat, lng] = latlng.split(',');
+
+  if (!lat || !lng) {
+    return next(
+      new AppError(
+        'Please provide latitute or longtitude in the format lat,lng',
+        400,
+      ),
+    );
+  }
+
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+  console.log(distance, lat, lng, unit, radius);
+
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
 });
 
 //EXTRACTED
