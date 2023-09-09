@@ -70,6 +70,12 @@ router
   .route('/tours-within/:distance/center/:latlng/unit/:unit')
   .get(tourController.getToursWithin);
 
+//latlng: the point where the user is
+//This route does not need the distance parameter as before
+//since I am not searching for a certain radious -because
+//I am calculating all the distance from a certain tour to all the tours that I have in my collection
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
 router
   .route('/')
   //THIS ROUTE IS NOT PROTECTED - IT SHUOLD BE EXPOSED TO ANYONE!!

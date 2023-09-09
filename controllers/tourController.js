@@ -7,43 +7,7 @@ const APIFeatures = require('./../utils/apiFeatures');
 const AppError = require('../utils/appError');
 
 const factory = require('./handlerFactory');
-// console.log(Tour);
 
-// OK
-// exports.checkBody = (req, res, next) => {
-//   if (!req.body.name || !req.body.price)
-//     return res.status(400).json({
-//       status: 'fail',
-//       message: 'Missing name or price',
-//     });
-
-//   next();
-// };
-
-//WRONG - NO ID PARAM IN THE URL OF THE POST REQUEST!
-// exports.checkBody = (req, res, next, val) => {
-//   console.log(`inside checkID: body = ${val}`);
-//   console.log(req.body);
-//   if (!req.body.name || !body.req.price)
-//     return res.status(404).json({
-//       status: 'fail',
-//       message: 'Tour must have name and price values',
-//     });
-
-//   next();
-// };
-
-/**My Middleware for Alias a demended URL
- * 
- * Essentially I build a request with a query params as if the user did this in POSTMAN
- * http://localhost:3000/api/v1/tours/top-5-cheap
- This middleware will be called by the tourRoutes when a request for /top-5-cheap' : 
- This function will prefill some req params before it will get 
- to the getAllTours
- NOTE: set to Strings!
- * 
- *
- */
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
   req.query.sort = '-ratingsAverage,price';
@@ -51,104 +15,10 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 };
 
-//ROUTES
-
-// exports.getAllTours = catchAsync(async (req, res, next) => {
-//   // const requestedAt = Date.now().toString();
-//   const features = new APIFeatures(Tour.find(), req.query)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .paginate();
-//   //The features.query has the find method on it
-//   //EXECUTING THE QUERY
-//   const tours = await features.query;
-//   // const tours = await query;
-//   //MongoDB  filter object in the query with gte : {difficulty:'easy', duration:{$gte:4}}
-//   //SNED RESOPNSE
-//   res
-//     .status(200)
-//     .json({ status: 'success', results: tours.length, data: { tours } });
-// });
-
 exports.getAllTours = factory.getAll(Tour);
 
 //IMPORTANT - PASS THE popOptions object to the factory - to populate the tour with it's reviews childs
 exports.getTour = factory.getOne(Tour, { path: 'reviews' });
-
-/*
-NOTE:(lec 153) the populate - for filling up the  guides array of the Query
-(not the guides field in the DB - which contains ids )
-const tour = await Tour.findById(req.params.id).populate('guides');
-Filter out all unnessary fields of the guides - such as __v , and passwordChnaged
-
-NOTE:findById() - Shorthand for findOne of Mongoose: 
-Tour.findOne({_id: req.param.id})
-  */
-
-// exports.getTour = catchAsync(async (req, res, next) => {
-//   //EXTRACT THIS populate code   TO QUERY M.W FUNCTION IN THE TOUR MODEL()(since I want to fillup the t
-//   //the tours wiwth the actual correspoinding tour guides on both findTour and findAllTours!!!
-//   // const tour = await Tour.findById(req.params.id).populate({
-//   //   path: 'guides',
-//   //   select: '-__v -passwordChnagedAt',
-//   // });
-
-//   //NOTE: reviews is a virtual reference - there is no array of revies id in CB!!
-//   //I WANT TO POPULATE THE TOUR WITH IT'S USER DATA IN THE RESPONE !
-//   const tour = await Tour.findById(req.params.id).populate('reviews');
-
-//   console.log('getTour - the tour with the actaul guides:');
-//   console.log(tour);
-//   //console.log(`Inside getTour() - found tour: ${tour}`);
-//   //HANDLE TOUR NOT FOUND(WITH VALID ID) by
-//   //creating my AppError , pass it to next, and return immedialty
-//   //THIS ERROR WILL BE MARKED AS OPERATOINAL BY THE AppError constructor!
-//   if (!tour) {
-//     return next(new AppError('No tour found with that ID', 404));
-//   }
-//   res.status(200).json({ status: 'success', data: { tour } });
-
-//   // res.status(404).json({ status: 'fail', data: null });
-// });
-//read the id from the url(NOTE: The end point in the controlRoute was
-//defined as /api/v1/tours/:id )
-//EXTRACTED
-// if (req.params.id * 1 > tours.length)
-//   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-//const tour = tours.find((tour) => tour.id === req.params.id * 1);
-//Check if id is valid - solution 2:
-// if (!tour)
-//   return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-// const t = tours.find((tour) => tour.id === +req.params.id);
-// console.log(tour.name);
-//MOVE IT TO THE A MODULE IN THE UTILS.js
-// const catchAsync = (fn) => {
-//   //This return function - Express will call - when POST request hits the server
-//   //ALL THE MAGIC - THIS IS WAHT ALLOWS ME TO REMOVE THE TRY-CATCH BOILERPLATE
-//   //WRONG
-//   //return (fn) => fn(req, res, next).catch(next);
-//   return (req, res, next) => fn(req, res, next).catch(next);
-// };
-
-// exportscreateTour = factory.createOne(Tour);
-//EXTRACTED TO THE FACTORY createOne
-
-// exports.createTour = catchAsync(async (req, res, next) => {
-//   console.log(
-//     '---------inside creatTour handler: the logged in user----------',
-//   );
-//   console.log(req.user);
-//   const newTour = await Tour.create(req.body);
-
-//   //BUSINESS LOGIC ONLY - NOT ERROR HANDLING!
-//   res.status(201).json({
-//     status: 'success',
-//     data: {
-//       tour: newTour,
-//     },
-//   });
-// });
 
 exports.createTour = factory.createOne(Tour);
 //IMPORTANT - the updateTour
@@ -312,6 +182,7 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
   //Create an array of [lag,lng] from the latlng variable
   // - and destructt the array - to get the lat , lng at once
   const [lat, lng] = latlng.split(',');
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
 
   if (!lat || !lng) {
     return next(
@@ -322,7 +193,6 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
     );
   }
 
-  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
   console.log(distance, lat, lng, unit, radius);
 
   const tours = await Tour.find({
@@ -334,6 +204,54 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
     results: tours.length,
     data: {
       data: tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  //convrt the results(meters) to either mi or km(since meters is not readable)
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    return next(
+      new AppError(
+        'Please provide latitute or longtitude in the format lat,lng',
+        400,
+      ),
+    );
+  }
+
+  //PART 2 : CALCUALTION WITH AGGRAGATOIN PIPELINE- USING THE geoNear Stage
+  const distances = await Tour.aggregate([
+    //$geoNear - Must be the FIRST STAGE IN THE PIPELINE
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        distanceField: 'distance',
+        //NOTE: in the geoNear stage: I can easily convert the meters to km
+        // by specify  the  distancMultiplier property !
+        distanceMultiplier: multiplier,
+      },
+    },
+    //SECDON STAGE: PROJECT - return only the name and the distnace(from first stage)
+    {
+      $project: {
+        //KEEP THE DISTANCE and tour by setting to 1
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: distances,
     },
   });
 });

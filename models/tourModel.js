@@ -244,12 +244,12 @@ tourSchema.pre(/^find/, function (next) {
 });
 ///////////////////////////////////////
 //Aggragtion Middleware - apply the filter of the secret tour on the request for statistics
-tourSchema.pre('aggregate', function (next) {
-  //Adding a new stage element to the begining  of the array
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  console.log(this.pipeline());
-  next();
-});
+// tourSchema.pre('aggregate', function (next) {
+//   //Adding a new stage element to the begining  of the array
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   console.log(this.pipeline());
+//   next();
+// });
 
 /**
    * Create a tour model from the shcema
