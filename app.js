@@ -97,9 +97,9 @@ app.use((req, res, next) => {
   next();
 });
 
-/////////////////////////////////////////////////
-//ROUTE HANDLERS
-/////////////////////////////////
+//////////////////////////////////
+//ROUTES
+////////////////////////////////////
 //const port = 3000;
 //Suppose this route handler wants to know the time the request send- and send it to the response
 
@@ -108,6 +108,14 @@ app.get('/', (req, res) => {
   //INSTEAD OF JSON - USE RENDER() - to render the template with the name I passed
   //CREATE 'LCOALS' TO THE PUG TEMPLATE
   res.status(200).render('base', { tour: 'The Forest Hicker', user: 'Nir' });
+});
+
+app.get('/overview', (req, res) => {
+  res.status(200).render('overview', { title: 'All Tours' });
+});
+
+app.get('/tour', (req, res) => {
+  res.status(200).render('tour', { title: 'The Forest Hiker Tour' });
 });
 //MOUNTING  ROUTERS- which are M.W!! ON A ROUTE(/api/v1/users)
 app.use('/api/v1/tours', tourRouter);
