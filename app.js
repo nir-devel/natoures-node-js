@@ -3,6 +3,7 @@ const path = require('path');
 const userRouter = require('./routes/userRoutes');
 const tourRouter = require('./routes/tourRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewsRoutes');
 //const reviewRouter = require('./routes/reviewRoutes');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -103,21 +104,9 @@ app.use((req, res, next) => {
 //const port = 3000;
 //Suppose this route handler wants to know the time the request send- and send it to the response
 
-//Get the root of the website
-app.get('/', (req, res) => {
-  //INSTEAD OF JSON - USE RENDER() - to render the template with the name I passed
-  //CREATE 'LCOALS' TO THE PUG TEMPLATE
-  res.status(200).render('base', { tour: 'The Forest Hicker', user: 'Nir' });
-});
-
-app.get('/overview', (req, res) => {
-  res.status(200).render('overview', { title: 'All Tours' });
-});
-
-app.get('/tour', (req, res) => {
-  res.status(200).render('tour', { title: 'The Forest Hiker Tour' });
-});
-//MOUNTING  ROUTERS- which are M.W!! ON A ROUTE(/api/v1/users)
+//MOUNTING THE Router  FOR THE VIEWS:(right on the root URL)
+app.use('/', viewRouter);
+//MOUNTING  Routers for the RESOURCES- which are M.W!! ON A ROUTE(/api/v1/users)
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
