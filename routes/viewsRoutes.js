@@ -12,4 +12,6 @@ router.get('/', viewsController.getOverview);
 
 router.get('/tour', viewsController.getTour);
 
+//CHALLENGE - LEC 184 - TOUR DETAILS PAGE: MY SOLUTION - GREAT! THE ROUTE FOR THE REQUEST TO GET A TOUR BY IT'S SLUG
+router.get('/tour/:slug', viewsController.getTour);
 module.exports = router;

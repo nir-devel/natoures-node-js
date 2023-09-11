@@ -242,6 +242,20 @@ tourSchema.pre(/^find/, function (next) {
   this.populate({ path: 'guides', select: '-_v -passwordChangedAt' });
   next();
 });
+
+//SHOULD I DEFINE THIS FOR THE CHALLENGE?????????LEC 184
+// tourSchema.pre(/^find/, function (next) {
+//   // console.log('----INSIDE PRE M.W ^find Query');
+//   this.populate({ path: 'reviews', select: '-_v -passwordChangedAt' });
+//   next();
+// });
+
+//CHALLENGE !! LEC 184!
+tourSchema.pre(/^find/, function (next) {
+  // console.log('----INSIDE PRE M.W ^find Query');
+  this.populate({ path: 'guides', select: '-_v -passwordChangedAt' });
+  next();
+});
 ///////////////////////////////////////
 //Aggragtion Middleware - apply the filter of the secret tour on the request for statistics
 // tourSchema.pre('aggregate', function (next) {
