@@ -1,30 +1,12 @@
 extends base 
 
 include _reviewCard
-//- mixin reviewCard(review)
-//-   .reviews__card
-//-     .reviews__avatar
-//-       img.reviews__avatar-img(src=`/img/users/${review.user.photo}`, alt=`${review.user.name}`)
-//-       h6.reviews__user= review.user.name
-//-     p.reviews__text= review.review
-//-     .reviews__rating
-//-       each star in [1,2,3,4,5]
-//-         //- 3/5,
-//-         svg.reviews__star(class=`reviews__star--${review.rating >=star ? 'active':'inactive'}`)
-//-           use(xlink:href='/img/icons.svg#icon-star')
-        
-        //- class=`reviews__star--${review.rating >= star ? 'active':'' }`
 
-      //- svg.reviews__star.reviews__star--active
-      //-   use(xlink:href='/img/icons.svg#icon-star')
-      //- svg.reviews__star.reviews__star--active
-      //-   use(xlink:href='/img/icons.svg#icon-star')
-      //- svg.reviews__star.reviews__star--active
-      //-   use(xlink:href='/img/icons.svg#icon-star')
-      //- svg.reviews__star.reviews__star--active
-      //-   use(xlink:href='/img/icons.svg#icon-star')
-      //- svg.reviews__star.reviews__star--active
-      //-   use(xlink:href='/img/icons.svg#icon-star')
+//- all content I will write in this head block will be appnded to the content that is alreayd in this block!!
+//- since the current template already extends the base template - then by the below append code
+//- I inject the code into the head block that is already in the base template
+block append head
+  //- script(src='/js/mapbox.js')
 
 
 mixin overviewBox(label,text,icon )
@@ -122,9 +104,9 @@ block content
         class= `picture-box__img--${i+1}`)
 
 
-
+  //- USE DATA-ATTRIBUTE TO INJECT THE LOCATION DATA IN THE HTML (INSTEAD OF MAKING AJAX CALL TO MY API! )
   section.section-map
-    #map
+    #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
   section.section-reviews
     .reviews
