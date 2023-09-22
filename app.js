@@ -25,6 +25,13 @@ app.use(cors());
 
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+//////////////////////////////////
+//FURTHER HELMET CONFIGURATION FOR LEAFLET
+// Further HELMET configuration for Security Policy (CSP)
+// Further HELMET configuration for Security Policy (CSP)
+
+//END HELMET FOR LEAFLET
+///////////////////////
 
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
@@ -74,6 +81,30 @@ app.use(
 );
 //HELOMET global m.w - for adding importnat secure headers!!
 app.use(helmet());
+const scriptSrcUrls = ['https://unpkg.com/', 'https://tile.openstreetmap.org'];
+const styleSrcUrls = [
+  'https://unpkg.com/',
+  'https://tile.openstreetmap.org',
+  'https://fonts.googleapis.com/',
+];
+const connectSrcUrls = ['https://unpkg.com', 'https://tile.openstreetmap.org'];
+const fontSrcUrls = ['fonts.googleapis.com', 'fonts.gstatic.com'];
+
+//set security http headers
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: [],
+      connectSrc: ["'self'", ...connectSrcUrls],
+      scriptSrc: ["'self'", ...scriptSrcUrls],
+      styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+      workerSrc: ["'self'", 'blob:'],
+      objectSrc: [],
+      imgSrc: ["'self'", 'blob:', 'data:', 'https:'],
+      fontSrc: ["'self'", ...fontSrcUrls],
+    },
+  }),
+);
 
 //////////////////
 //ENV VARIALBES
